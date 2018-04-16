@@ -1,6 +1,4 @@
 import random
-from tqdm import tqdm
-
 class Conniption:
     ##Parameters:
     #   board - a length 7 list of boolean lists where each list is no longer
