@@ -1,4 +1,5 @@
 import random
+
 class Conniption:
     ##Parameters:
     #   board - a length 7 list of boolean lists where each list is no longer
@@ -115,34 +116,25 @@ class Conniption:
     def genChildStates(self, player):
         #Generate no flip children here
         noFlip = [(self.board[:c]+[self.board[c]+[player]]+self.board[c+1:],self.flipsRem,True) for c in range(7) if len(self.board[c]) < 6]
-        if self.canFlip or self.flipsRem[0 if player else 1] > 0:
-            flipped = [list(reversed(c)) for c in self.board]
-        else:
-            return [Conniption(b[0],b[1],b[2]) for b in noFlip]
-        
-        #Generate post-flip children here
-        if self.flipsRem[0 if player else 1] > 0:
-            remFlips = (self.flipsRem[0]-1, self.flipsRem[1]) if player else (self.flipsRem[0],self.flipsRem[1]-1)
-            postFlip = [(flipped[:c]+[[player]+flipped[c]]+flipped[c+1:],remFlips,True) for c in range(7) if len(flipped[c]) < 6]
-        else:
-            postFlip = []
-
-        #Generate pre-flip and dual-flip children here
         fr = self.flipsRem[0 if player else 1]
-        if self.canFlip and fr > 0:
-            remFlips = (self.flipsRem[0]-1, self.flipsRem[1]) if player else (self.flipsRem[0],self.flipsRem[1]-1)
-            preFlip = [(flipped[:c]+[flipped[c]+[player]]+flipped[c+1:],remFlips,True) for c in range(7) if len(flipped[c]) < 6]
 
-            if fr > 1:
-                remFlips = (self.flipsRem[0]-1, self.flipsRem[1]) if player else (self.flipsRem[0],self.flipsRem[1]-1)
-                dualFlip = [(self.board[:c]+[[player]+self.board[c]]+self.board[c+1:],remFlips,True) for c in range(7) if len(self.board[c]) < 6]
-            else:
-                dualFlip = []
-        else:
-            preFlip = []
-            dualFlip = []
+        if fr > 0:  #Required for all flips
+            flipped = [list(reversed(c)) for c in self.board]
+            remFlips = (self.flipsRem[0]-1, self.flipsRem[1]) if player else (self.flipsRem[0],self.flipsRem[1]-1)
+            postFlip = [(flipped[:c]+[[player]+flipped[c]]+flipped[c+1:],remFlips,False) for c in range(7) if len(flipped[c]) < 6]
+            if self.canFlip: #Required for preFlip and dualFlip
+                preFlip = [(flipped[:c]+[flipped[c]+[player]]+flipped[c+1:],remFlips,True) for c in range(7) if len(flipped[c]) < 6]
+                if fr > 1: #Required for dualFlip
+                    remFlips = (self.flipsRem[0]-2, self.flipsRem[1]) if player else (self.flipsRem[0],self.flipsRem[1]-2)
+                    dualFlip = [(self.board[:c]+[[player]+self.board[c]]+self.board[c+1:],remFlips,False) for c in range(7) if len(self.board[c]) < 6]
         
-        return [Conniption(b[0],b[1],b[2]) for b in noFlip + preFlip + postFlip + dualFlip]
+                    return [Conniption(b[0],b[1],b[2]) for b in noFlip + preFlip + postFlip + dualFlip]
+                else: #Cannot flip more than once
+                    return [Conniption(b[0],b[1],b[2]) for b in noFlip + preFlip + postFlip]
+            else: #Cannot flip before placing piece
+                return [Conniption(b[0],b[1],b[2]) for b in noFlip + postFlip]
+        else: #No flips possible
+            return [Conniption(b[0],b[1],b[2]) for b in noFlip]
 
     ##May be useful later for comparing boards to prevent revisiting equivalent
     # states. Usefulness might be less than previously expected, however, due to
