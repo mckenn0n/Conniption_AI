@@ -1,4 +1,5 @@
 import random
+from tqdm import tqdm
 
 class Conniption:
     ##Parameters:
@@ -33,7 +34,7 @@ class Conniption:
                 raise TypeError("Boards must be a list of boolean lists")
         else:
             self.board = [[],[],[],[],[],[],[]]
-        
+
         if isinstance(flips, tuple) and len(flips) == 2                        \
         and isinstance(flips[0], int) and isinstance(flips[1], int):
             if flips[0] >=0 and flips[0] <= 4                                  \
@@ -94,11 +95,70 @@ class Conniption:
         self.canFlip = False
 
     #TODO: IMPLEMENT: This should be the objective function for comparing boards
-    #                 Should return a positive int/float. For Consistency,
-    #                 player1 advantage should be positive and player2 advantage
+    #                 Should return an int/float. For Consistency, player1
+    #                 advantage should be positive and player2 advantage
     #                 should be negative.
     def evalBoard(self):
         pass
+
+    ##This returns all of the states that are legally reachable by the end of the
+    # current (half) turn. This method will generate all children states that
+    # include no flips(noFlip), a flip before placing a chip(preFlip), a flip
+    # after placing a chip(postFlip), and a flip both before and after placing
+    # a chip(dualFlip).
+    #
+    # Parameter:
+    #   player - boolean. Indicates which player will be placing a piece for this
+    #            turn. True indicates that it is player1's turn and False
+    #            indicates that it is player2's turn.
+    #NOTE: This needs to be made as efficient as possible, as this will be one of
+    #      the major bottlenecks. Can currently generate all 28 possible children
+    #      of a given board state almost 4000 times per second on my machine
+    def genChildStates(self, player):
+        #Generate no flip children here
+        noFlip = [(self.board[:c]+[self.board[c]+[player]]+self.board[c+1:],self.flipsRem,True) for c in range(7) if len(self.board[c]) < 6]
+        if self.canFlip or self.flipsRem[0 if player else 1] > 0:
+            flipped = [list(reversed(c)) for c in self.board]
+        else:
+            return [Conniption(b[0],b[1],b[2]) for b in noFlip]
+        
+        #Generate post-flip children here
+        if self.flipsRem[0 if player else 1] > 0:
+            remFlips = (self.flipsRem[0]-1, self.flipsRem[1]) if player else (self.flipsRem[0],self.flipsRem[1]-1)
+            postFlip = [(flipped[:c]+[[player]+flipped[c]]+flipped[c+1:],remFlips,True) for c in range(7) if len(flipped[c]) < 6]
+        else:
+            postFlip = []
+
+        #Generate pre-flip and dual-flip children here
+        fr = self.flipsRem[0 if player else 1]
+        if self.canFlip and fr > 0:
+            remFlips = (self.flipsRem[0]-1, self.flipsRem[1]) if player else (self.flipsRem[0],self.flipsRem[1]-1)
+            preFlip = [(flipped[:c]+[flipped[c]+[player]]+flipped[c+1:],remFlips,True) for c in range(7) if len(flipped[c]) < 6]
+
+            if fr > 1:
+                remFlips = (self.flipsRem[0]-1, self.flipsRem[1]) if player else (self.flipsRem[0],self.flipsRem[1]-1)
+                dualFlip = [(self.board[:c]+[[player]+self.board[c]]+self.board[c+1:],remFlips,True) for c in range(7) if len(self.board[c]) < 6]
+            else:
+                dualFlip = []
+        else:
+            preFlip = []
+            dualFlip = []
+        
+        return [Conniption(b[0],b[1],b[2]) for b in noFlip + preFlip + postFlip + dualFlip]
+
+    ##May be useful later for comparing boards to prevent revisiting equivalent
+    # states. Usefulness might be less than previously expected, however, due to
+    # inability to place a Conniption object in a set. This may be able to be
+    # worked around by defining an appropriate __hash__() function (possibly just
+    # concatenated string version of all three parameters.
+    #       E.g. str(self.board) + str(self.flipsRem) + str(self.canFlip))
+    def __eq__(self, connip):
+        if self.canFlip == connip.canFlip                                      \
+        and self.flipsRem == connip.flipsRem                                   \
+        and self.board == connip.board:
+            return True
+        else:
+            return False
 
     ##For the purposes of the printing of the board, player1 chips will be
     # represented by the char "W" and player2 chips by the char "B". The char
@@ -112,8 +172,16 @@ class Conniption:
                 except:
                     retStr += "o "
             retStr = retStr[:-1] + "\n"
+        retStr += "White flips:  " + str(self.flipsRem[0]) + "\n"
+        retStr += "Blue flips:   " + str(self.flipsRem[1]) + "\n"
+        retStr += "Able to flip: " + str(self.canFlip)
         return retStr
 
+    ##May want to change this. FYI: this method defines how a object is printed when
+    # you print an object that contains a conniption board. For example, this prevents
+    # print([Conniption()]) from yielding the string "[<Conniption object at x...>]"
+    #
+    # Not a necessary change, but may be helpful for debugging purposes
     def __repr__(self):
         return self.__str__()
 
@@ -127,6 +195,9 @@ def genRandomState():
     return Conniption(board, flips, canFlip)
 
 if __name__ == "__main__":
-    randBoard = genRandomState()
+    t, f  = True, False
+    b = [[t,f],[f,t],[t,f],[f,t],[t,f],[f,t],[t,f]]
+    randBoard = Conniption(b)
+    x = randBoard.genChildStates(True)
     print(randBoard)
-    
+    print("Possible moves: " + str(len(x)))
