@@ -25,23 +25,23 @@ class Conniption:
 	#					fastest method appears to be tuple(generator)
 	def __init__(self, board=None, player1Turn=None,flips=None, flippable=None, parent=None, resultingMove=None):
 		if board is not None:
-			if isinstance(board, list)										 	\
-			and all([isinstance(x, list) for x in board])					  	\
+			if isinstance(board, tuple)										 	\
+			and all([isinstance(x, tuple) for x in board])					  	\
 			and all([isinstance(y,bool) for x in board for y in x]):
 				if len(board) == 7 and all(len(x) <= 6 for x in board):
 					self.board = board
 				else:
-					raise ValueError("Boards must have exactly 7 bool lists, " 	\
+					raise ValueError("Boards must have exactly 7 bool tuples, " \
 							   + "none of which can have more than 6 elements")
 			else:
-				raise TypeError("Boards must be a list of boolean lists")
+				raise TypeError("Boards must be a tuple of boolean tuples")
 			
 			if isinstance(player1Turn, bool) or player1Turn is None:
 				self.player1Turn = player1Turn
 			else:
 				raise TypeError("Player1Turn must be a single boolean value")
 
-			if isinstance(flips, tuple) and len(flips) == 2							\
+			if isinstance(flips, tuple) and len(flips) == 2						\
 			and isinstance(flips[0], int) and isinstance(flips[1], int):
 				if flips[0] >=0 and flips[0] <= 4								  	\
 				and flips[1] >= 0 and flips[1] <= 4:
@@ -68,7 +68,7 @@ class Conniption:
 
 		else:	#default starting state
 			if player1Turn is None and flips is None and flippable is None and parent is None and resultingMove is None:
-				self.board = [[],[],[],[],[],[],[]]
+				self.board = (tuple(),tuple(), tuple(), tuple(), tuple(), tuple(), tuple())
 				self.player1Turn = True
 				self.flipsRem = (4,4)
 				self.canFlip = True
@@ -91,7 +91,7 @@ class Conniption:
 	def placePiece(self, column):
 		if isinstance(column, int) and column >= 0 and column <= 6:
 			if len(self.board[column]) < 6:
-				self.board[column].append(self.player1Turn)
+				self.board[column] += (self.player1Turn,)
 				self.canFlip = True
 				self.player1Turn = not self.player1Turn
 			else:
@@ -118,7 +118,7 @@ class Conniption:
 				raise RuntimeError("Player 2 is out of flips")
 			self.flipsRem = (self.flipsRem[0], self.flipsRem[1] - 1)
 
-		self.board = [list(reversed(x)) for x in self.board]
+		self.board = [tuple(reversed(x)) for x in self.board]
 		self.canFlip = False
 
 	#TODO: IMPLEMENT: This should be the objective function for comparing boards
@@ -153,36 +153,45 @@ class Conniption:
 	#			indicates that it is player2's turn.
 	#NOTE: This needs to be made as efficient as possible, as this will be one of
 	#	  the major bottlenecks. Can currently generate all 28 possible children
-	#	  of a given board state almost 4000 times per second on my machine
+	#	  of a given board state almost 3500 times per second on my machine
 	def genChildStates(self):
 		nextTurn = not self.player1Turn
 		#Generate no flip children here
-		self.children = [Conniption(self.board[:c]+[self.board[c]+[self.player1Turn]]+self.board[c+1:],nextTurn,self.flipsRem,True,self,str(c)) for c in range(7) if len(self.board[c]) < 6]
+		self.children = [Conniption(self.board[:c]+((self.board[c]+(self.player1Turn,)),)+self.board[c+1:],nextTurn,self.flipsRem,True,self,str(c)) for c in range(7) if len(self.board[c]) < 6]	#NoFlip
 		fr = self.flipsRem[0 if self.player1Turn else 1]
-
 		if fr > 0:  #Required for all flips
-			flipped = [list(reversed(c)) for c in self.board]
+			flipped = tuple(tuple(reversed(c)) for c in self.board)
 			remFlips = (self.flipsRem[0]-1, self.flipsRem[1]) if self.player1Turn else (self.flipsRem[0],self.flipsRem[1]-1)
-			self.children += [Conniption(flipped[:c]+[[self.player1Turn]+flipped[c]]+flipped[c+1:],nextTurn,remFlips,False,self,str(c)+"F") for c in range(7) if len(flipped[c]) < 6]
+			self.children += [Conniption(flipped[:c]+(((self.player1Turn,)+flipped[c]),)+flipped[c+1:],nextTurn,remFlips,False,self,str(c)+"F") for c in range(7) if len(flipped[c]) < 6]	#PostFlip
 			if self.canFlip: #Required for preFlip and dualFlip
-				self.children += [Conniption(flipped[:c]+[flipped[c]+[self.player1Turn]]+flipped[c+1:],nextTurn,remFlips,True,self,"F"+str(c)) for c in range(7) if len(flipped[c]) < 6]
+				self.children += [Conniption(flipped[:c]+((flipped[c]+(self.player1Turn,)),)+flipped[c+1:],nextTurn,remFlips,True,self,"F"+str(c)) for c in range(7) if len(flipped[c]) < 6]	#PreFlip
 				if fr > 1: #Required for dualFlip
 					remFlips = (self.flipsRem[0]-2, self.flipsRem[1]) if self.player1Turn else (self.flipsRem[0],self.flipsRem[1]-2)
-					self.children += [Conniption(self.board[:c]+[[self.player1Turn]+self.board[c]]+self.board[c+1:],nextTurn,remFlips,False,self,"F"+str(c)+"F") for c in range(7) if len(self.board[c]) < 6]
+					self.children += [Conniption(self.board[:c]+(((self.player1Turn,)+self.board[c]),)+self.board[c+1:],nextTurn,remFlips,False,self,"F"+str(c)+"F") for c in range(7) if len(self.board[c]) < 6]	#DualFlip
 
 	##May be useful later for comparing boards to prevent revisiting equivalent
-	# states. Usefulness might be less than previously expected, however, due to
-	# inability to place a Conniption object in a set. This may be able to be
-	# worked around by defining an appropriate __hash__() function (possibly just
-	# concatenated string version of all three parameters.
-	#	   E.g. str(self.board) + str(self.flipsRem) + str(self.canFlip))
+	# states.
 	def __eq__(self, connip):
-		if self.canFlip == connip.canFlip									  	\
-		and self.flipsRem == connip.flipsRem								   	\
-		and self.board == connip.board:
+		if self.board == connip.board											\
+		and self.player1Turn == connip.player1Turn								\
+		and self.flipsRem == connip.flipsRem									\
+		and self.canFlip == connip.canFlip:
 			return True
 		else:
 			return False
+
+	def __ne__(self,connip):
+		if self.board != connip.board											\
+		or self.player1Turn != connip.player1Turn								\
+		or self.flipsRem != connip.flipsRem										\
+		or self.canFlip != connip.canFlip:
+			return True
+		else:
+			return False
+
+	##This is needed in order to make sets of states.
+	def __hash__(self):
+		return hash(self.board) + hash(self.player1Turn) + hash(self.flipsRem) + hash(self.canFlip)
 
 	##For the purposes of the printing of the board, player1 chips will be
 	# represented by the char "W" and player2 chips by the char "B". The char
@@ -221,7 +230,6 @@ def genRandomState():
 
 if __name__ == "__main__":
 	t, f  = True, False
-	b = [[t,f],[f,t],[t,f],[f,t],[t,f],[f,t],[t,f]]
+	b = ((t,f),(f,t),(t,f),(f,t),(t,f),(f,t),(t,f))
 	testBoard = Conniption(b, True, (4,4), True)
 	testBoard.genChildStates()
-	print(*testBoard.children, sep="\n\n")
