@@ -74,6 +74,8 @@ class Conniption:
 				self.canFlip = True
 				self.parent = None
 				self.resMove = None
+				self.us_weights = [1, 8, 128, 99999]
+				self.them_weights = [1, 8, 384, 999999]
 			else:
 				raise ValueError("Cannot specify any other fields if no board is specified")
 		self.children = None
@@ -139,7 +141,43 @@ class Conniption:
 	#						o o o W B W W
 	#					Another problem: not affected by the number of remaining flips or (maybe) possibility of flips
 	def evalBoard(self):
-		return 0
+		# Two sets of weights, one for the us (our AI) and one for them (their AI)
+		one_score = 0
+		two_score = 0
+		if self.flipsRem[0] == self.flipsRem[1]:
+			# print('flips are the same')
+			if self.flipsRem[0] == 4:
+				one_score += 75
+				two_score += 75
+			elif self.flipsRem[0] == 3:
+				one_score += 50
+				two_score += 50
+			elif self.flipsRem[0] == 2:
+				one_score += 25
+				two_score += 25
+			elif self.flipsRem[0] == 1:
+				one_score += 0
+				two_score += 0
+			else:
+				one_score -= 25
+				two_score -= 25
+		elif self.flipsRem[0] > self.flipsRem[1]:
+			# print('flips are the differnt 1 in lead')
+			diff_weight = (self.flipsRem[0] - self.flipsRem[1]) * (self.flipsRem[0] - self.flipsRem[1])
+			one_score += diff_weight * 25
+			two_score -= diff_weight * 25
+		else:
+			# print('flips are the differnt 2 in lead')
+			diff_weight = (self.flipsRem[0] - self.flipsRem[1]) * (self.flipsRem[0] - self.flipsRem[1])
+			one_score -= diff_weight * 25
+			two_score += diff_weight * 25
+		if self.canFlip:
+			# print('can be flipped')
+			one_score += 150
+		else:
+			# print('cant be flipped')
+			two_score += 150
+		return one_score - two_score
 
 	##This returns all of the states that are legally reachable by the end of the
 	# current (half) turn. This method will generate all children states that

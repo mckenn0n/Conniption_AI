@@ -17,13 +17,14 @@ class AlphaBeta:
 		best_state = None
 		board.genChildStates()
 
+		value = 0
 		for state in board.children:
 			value = self.min_value(state, depth+1, alpha, beta)
 			if value > alpha:
 				alpha = value
 				best_state = state
 		#print("alpha: "+str(alpha)) #For testing purposes
-		return best_state
+		return best_state, value
 
 	##Parameters:
 	#	state - Conniption object that contains future state of the board
@@ -77,5 +78,5 @@ if __name__ == "__main__":
 	b = ((t,f),(f,t),(t,f),(f,t),(t,f),(f,t),(t,f))
 	testBoard = Conniption(b, True, (4,4), True)
 	search = AlphaBeta()
-	result = search.alpha_beta_search(testBoard,2)
-	print(result)
+	result = search.alpha_beta_search(testBoard,4)
+	print(result[0],'\nScore for player is',result[1])
