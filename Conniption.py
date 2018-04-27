@@ -1,6 +1,7 @@
 import random
 
 class Conniption:
+	defaultBoard = (tuple(),tuple(), tuple(), tuple(), tuple(), tuple(), tuple())
 	##Parameters:
 	#   board - a length 7 list of boolean lists where each list is no longer
 	#		   than length 6. This is the current configuration of the board.
@@ -19,63 +20,16 @@ class Conniption:
 	#   a player2 chip. For example, [[],[],[],[True,False],[],[],[]] represents
 	#   a board where all columns except for the center column are empty and the
 	#   center column consists only of one player2 chip above one player1 chip.
-	#TODO: possibly change 2d list to a 2d tuple. Should only need to marginally change expansion function, but will allow boards to be added to sets
-	#      		NOTE:can cast lists to tuple and can cast generators to tuples, which essentially work as a tuple comprehension
-	#					Also, *(generator), works as a tuple comprehension
-	#					fastest method appears to be tuple(generator)
-	def __init__(self, board=None, player1Turn=None,flips=None, flippable=None, parent=None, resultingMove=None):
-		if board is not None:
-			if isinstance(board, tuple)										 	\
-			and all([isinstance(x, tuple) for x in board])					  	\
-			and all([isinstance(y,bool) for x in board for y in x]):
-				if len(board) == 7 and all(len(x) <= 6 for x in board):
-					self.board = board
-				else:
-					raise ValueError("Boards must have exactly 7 bool tuples, " \
-							   + "none of which can have more than 6 elements")
-			else:
-				raise TypeError("Boards must be a tuple of boolean tuples")
-			
-			if isinstance(player1Turn, bool) or player1Turn is None:
-				self.player1Turn = player1Turn
-			else:
-				raise TypeError("Player1Turn must be a single boolean value")
-
-			if isinstance(flips, tuple) and len(flips) == 2						\
-			and isinstance(flips[0], int) and isinstance(flips[1], int):
-				if flips[0] >=0 and flips[0] <= 4								  	\
-				and flips[1] >= 0 and flips[1] <= 4:
-					self.flipsRem = flips
-				else:
-					raise ValueError("Number of remaining flips must between 0 and 4")
-			else:
-				raise TypeError("flips must be a 2-tuple of ints")
-
-			if isinstance(flippable, bool):
-				self.canFlip = flippable
-			else:
-				raise TypeError("flippable must be a boolean")
-
-			if isinstance(parent, Conniption) or parent is None:
-				self.parent = parent
-			else:
-				raise TypeError("Conniption state can only have a conniption board or nothing as its parent")
-
-			if isinstance(resultingMove, str) or resultingMove is None:
-				self.resMove = resultingMove
-			else:
-				raise TypeError("Resulting Move must be a string with with a number with an optional 'F' before and/or after than number")
-
-		else:	#default starting state
-			if player1Turn is None and flips is None and flippable is None and parent is None and resultingMove is None:
-				self.board = (tuple(),tuple(), tuple(), tuple(), tuple(), tuple(), tuple())
-				self.player1Turn = True
-				self.flipsRem = (4,4)
-				self.canFlip = True
-				self.parent = None
-				self.resMove = None
-			else:
-				raise ValueError("Cannot specify any other fields if no board is specified")
+	#
+	#NOTE: If board is not passed as a parameter, then defaults for every field
+	#      will be used, regardless of whether they are included.
+	def __init__(self, board=defaultBoard, player1Turn=True,flips=(4,4), flippable=True, parent=None, resultingMove=None):
+		self.board = board
+		self.flipsRem = flips
+		self.canFlip = flippable
+		self.player1Turn = player1Turn
+		self.parent = parent
+		self.resMove = resultingMove
 		self.children = None
 
 	##Places a piece in the associated column.
@@ -158,17 +112,17 @@ class Conniption:
 		if self.children is not None: return
 		nextTurn = not self.player1Turn
 		#Generate no flip children here
-		self.children = {Conniption(self.board[:c]+((self.board[c]+(self.player1Turn,)),)+self.board[c+1:],nextTurn,self.flipsRem,True,self,str(c)) for c in range(7) if len(self.board[c]) < 6}	#NoFlip
+		self.children = {Conniption(self.board[:c]+((self.board[c]+(self.player1Turn,)),)+self.board[c+1:],nextTurn,self.flipsRem,True,self,str(c+1)) for c in range(7) if len(self.board[c]) < 6}	#NoFlip
 		fr = self.flipsRem[0 if self.player1Turn else 1]
 		if fr > 0:  #Required for all flips
 			flipped = tuple(tuple(reversed(c)) for c in self.board)
 			remFlips = (self.flipsRem[0]-1, self.flipsRem[1]) if self.player1Turn else (self.flipsRem[0],self.flipsRem[1]-1)
-			self.children |= {Conniption(flipped[:c]+(((self.player1Turn,)+flipped[c]),)+flipped[c+1:],nextTurn,remFlips,False,self,str(c)+"F") for c in range(7) if len(flipped[c]) < 6}	#PostFlip
+			self.children |= {Conniption(flipped[:c]+(((self.player1Turn,)+flipped[c]),)+flipped[c+1:],nextTurn,remFlips,False,self,str(c+1)+"f") for c in range(7) if len(flipped[c]) < 6}	#PostFlip
 			if self.canFlip: #Required for preFlip and dualFlip
-				self.children |= {Conniption(flipped[:c]+((flipped[c]+(self.player1Turn,)),)+flipped[c+1:],nextTurn,remFlips,True,self,"F"+str(c)) for c in range(7) if len(flipped[c]) < 6}	#PreFlip
+				self.children |= {Conniption(flipped[:c]+((flipped[c]+(self.player1Turn,)),)+flipped[c+1:],nextTurn,remFlips,True,self,"f"+str(c+1)) for c in range(7) if len(flipped[c]) < 6}	#PreFlip
 				if fr > 1: #Required for dualFlip
 					remFlips = (self.flipsRem[0]-2, self.flipsRem[1]) if self.player1Turn else (self.flipsRem[0],self.flipsRem[1]-2)
-					self.children |= {Conniption(self.board[:c]+(((self.player1Turn,)+self.board[c]),)+self.board[c+1:],nextTurn,remFlips,False,self,"F"+str(c)+"F") for c in range(7) if len(self.board[c]) < 6}	#DualFlip
+					self.children |= {Conniption(self.board[:c]+(((self.player1Turn,)+self.board[c]),)+self.board[c+1:],nextTurn,remFlips,False,self,"f"+str(c+1)+"f") for c in range(7) if len(self.board[c]) < 6}	#DualFlip
 
 	##May be useful later for comparing boards to prevent revisiting equivalent
 	# states.
@@ -232,5 +186,5 @@ def genRandomState():
 if __name__ == "__main__":
 	t, f  = True, False
 	b = ((t,f),(f,t),(t,f),(f,t),(t,f),(f,t),(t,f))
-	testBoard = Conniption(b, True, (4,4), True)
-	testBoard.genChildStates()
+	testBoard = Conniption(player1Turn=False)
+	print(testBoard)#testBoard.genChildStates()
