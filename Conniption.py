@@ -20,67 +20,6 @@ class Conniption:
 	#   a player2 chip. For example, [[],[],[],[True,False],[],[],[]] represents
 	#   a board where all columns except for the center column are empty and the
 	#   center column consists only of one player2 chip above one player1 chip.
-<<<<<<< HEAD
-	#TODO: possibly change 2d list to a 2d tuple. Should only need to marginally change expansion function, but will allow boards to be added to sets
-	#      		NOTE:can cast lists to tuple and can cast generators to tuples, which essentially work as a tuple comprehension
-	#					Also, *(generator), works as a tuple comprehension
-	#					fastest method appears to be tuple(generator)
-	def __init__(self, board=None, player1Turn=None,flips=None, flippable=None, parent=None, resultingMove=None):
-		if board is not None:
-			if isinstance(board, tuple)										 	\
-			and all([isinstance(x, tuple) for x in board])					  	\
-			and all([isinstance(y,bool) for x in board for y in x]):
-				if len(board) == 7 and all(len(x) <= 6 for x in board):
-					self.board = board
-				else:
-					raise ValueError("Boards must have exactly 7 bool tuples, " \
-							   + "none of which can have more than 6 elements")
-			else:
-				raise TypeError("Boards must be a tuple of boolean tuples")
-			
-			if isinstance(player1Turn, bool) or player1Turn is None:
-				self.player1Turn = player1Turn
-			else:
-				raise TypeError("Player1Turn must be a single boolean value")
-
-			if isinstance(flips, tuple) and len(flips) == 2						\
-			and isinstance(flips[0], int) and isinstance(flips[1], int):
-				if flips[0] >=0 and flips[0] <= 4								  	\
-				and flips[1] >= 0 and flips[1] <= 4:
-					self.flipsRem = flips
-				else:
-					raise ValueError("Number of remaining flips must between 0 and 4")
-			else:
-				raise TypeError("flips must be a 2-tuple of ints")
-
-			if isinstance(flippable, bool):
-				self.canFlip = flippable
-			else:
-				raise TypeError("flippable must be a boolean")
-
-			if isinstance(parent, Conniption) or parent is None:
-				self.parent = parent
-			else:
-				raise TypeError("Conniption state can only have a conniption board or nothing as its parent")
-
-			if isinstance(resultingMove, str) or resultingMove is None:
-				self.resMove = resultingMove
-			else:
-				raise TypeError("Resulting Move must be a string with with a number with an optional 'F' before and/or after than number")
-
-		else:	#default starting state
-			if player1Turn is None and flips is None and flippable is None and parent is None and resultingMove is None:
-				self.board = (tuple(),tuple(), tuple(), tuple(), tuple(), tuple(), tuple())
-				self.player1Turn = True
-				self.flipsRem = (4,4)
-				self.canFlip = True
-				self.parent = None
-				self.resMove = None
-				self.us_weights = [1, 8, 128, 99999]
-				self.them_weights = [1, 8, 384, 999999]
-			else:
-				raise ValueError("Cannot specify any other fields if no board is specified")
-=======
 	#
 	#NOTE: If board is not passed as a parameter, then defaults for every field
 	#      will be used, regardless of whether they are included.
@@ -91,7 +30,8 @@ class Conniption:
 		self.player1Turn = player1Turn
 		self.parent = parent
 		self.resMove = resultingMove
->>>>>>> Improved efficiency of init (removed typechecking)
+		self.us_weights = [1, 8, 128, 99999]
+		self.them_weights = [1, 8, 384, 999999]
 		self.children = None
 
 	##Places a piece in the associated column.

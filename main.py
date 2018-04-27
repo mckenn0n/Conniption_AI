@@ -45,8 +45,9 @@ while True:
         if not curBoard.player1Turn:
             print("There is no reason to search when player 2 is the next person to place a piece.")
         else:
-            curBoard = search.alpha_beta_search(curBoard, searchDepth)
+            curBoard, value = search.alpha_beta_search(curBoard, searchDepth)
             print("Suggested Move: " + curBoard.resMove)
+            print("Predicted path value: " + str(value))
     else:       #Move made where com.string describes that move
         if curBoard.player1Turn:
             print("You should only input specific moves when player 2 is the next person to place a piece.")
@@ -59,4 +60,6 @@ while True:
                     found = True
             if not found:
                 print(com.string + " is not a legal move.")
+            else:
+                print("Player 2 played move " + com.string)
 print("Thanks for playing.")
