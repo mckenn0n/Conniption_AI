@@ -1,4 +1,8 @@
 from Conniption import Conniption
+import time
+
+## Global dictionary to save states and their evaluations
+visited = {}
 
 class AlphaBeta:
 
@@ -35,7 +39,14 @@ class AlphaBeta:
 	#	Note: recursion helper method of finding the max value for a given depth
 	def max_value(self, state, depth, alpha, beta):
 		if depth >= self.max_depth:
-			return state.evalBoard()
+			global visited
+			if state in visited:
+				#print("found in dict")
+				return visited.get(state)
+			else:
+				eval = state.evalBoard()
+				visited[state]= eval
+				return eval
 
 		infinity = float('inf')
 		value = -infinity
@@ -58,7 +69,14 @@ class AlphaBeta:
 	#	Note: recursion helper method of finding the max value for a given depth
 	def min_value(self, state, depth, alpha, beta):
 		if depth >= self.max_depth:
-			return state.evalBoard()
+			global visited
+			if state in visited:
+				#print("found in dict")
+				return visited.get(state)
+			else:
+				eval = state.evalBoard()
+				visited[state] = eval
+				return eval
 
 		infinity = float('inf')
 		value = infinity
@@ -78,5 +96,7 @@ if __name__ == "__main__":
 	b = ((t,f),(f,t),(t,f),(f,t),(t,f),(f,t),(t,f))
 	testBoard = Conniption(b, True, (4,4), True)
 	search = AlphaBeta()
-	result = search.alpha_beta_search(testBoard,4)
+	start = time.time()
+	result = search.alpha_beta_search(testBoard,6)
+	print(time.time() - start)
 	print(result[0],'\nScore for player is',result[1])
