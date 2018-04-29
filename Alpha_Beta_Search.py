@@ -45,7 +45,6 @@ class AlphaBeta:
 			if self.saveVisited:
 				global visited
 				if state in visited:
-					print("found in dict")
 					return visited.get(state)
 				else:
 					eval = state.evalBoard()
@@ -78,7 +77,6 @@ class AlphaBeta:
 			if self.saveVisited:
 				global visited
 				if state in visited:
-					#print("found in dict")
 					return visited.get(state)
 				else:
 					eval = state.evalBoard()
