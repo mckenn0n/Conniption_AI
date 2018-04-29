@@ -8,6 +8,7 @@ def displayCommands():
     print("  h(elp)\tDisplay this menu")
     print("  d(isplay)\tDisplay the current board state")
     print("  u(ndo)\tRevert to the most recent previous state")
+    print("\t\t\tNOTE: this command only allows reverting by up to one ply")
     print("  s(earch)\tPerform a search and output the suggested next move")
     print("\t\t\tNOTE: this automatically changes the current state to the")
     print("\t\t\t      suggested one.")
@@ -30,7 +31,7 @@ while True:
     com = None
     while com is None:
         com = re.fullmatch(commands, input(prompt).lower())
-        if com is None: print("Invalid command. Type 'h' or 'help' to see a list of allowed commands")
+        if com is None: print("Invalid command. Type 'h' or 'help' to see a list of allowed commands.")
 
     if   com.string[0] == "q": #quit
         break
@@ -39,12 +40,18 @@ while True:
     elif com.string[0] == "d": #display current board state
         print(curBoard)
     elif com.string[0] == "u": #undo most recent move
-        curBoard = curBoard.parent
-        print("Board state rolled back by one move")
+        if curBoard.parent is not None:
+            curBoard = curBoard.parent
+            print("Board state rolled back by one move.")
+        else:
+            print("Cannot undo past the current state.")
+    #TODO: Maybe implement win/loss state checker for this and the following command.
     elif com.string[0] == "s": #search with current board as root
         if not curBoard.player1Turn:
             print("There is no reason to search when player 2 is the next person to place a piece.")
         else:
+            try: curBoard.parent.parent = None #remove reference to allow garbage collection
+            except: pass
             curBoard, value = search.alpha_beta_search(curBoard, searchDepth)
             print("Suggested Move: " + curBoard.resMove)
             print("Predicted path value: " + str(value))
@@ -56,10 +63,12 @@ while True:
             curBoard.genChildStates()
             for ch in curBoard.children:
                 if ch.resMove == com.string:
+                    try: curBoard.parent.parent = None #remove reference to allow garbage collection
+                    except: pass
                     curBoard = ch
                     found = True
             if not found:
                 print(com.string + " is not a legal move.")
             else:
-                print("Player 2 played move " + com.string)
+                print("Player 2 played move " + com.string + ".")
 print("Thanks for playing.")
