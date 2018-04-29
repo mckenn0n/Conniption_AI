@@ -9,10 +9,13 @@ class AlphaBeta:
 	##Parameters:
 	#   board - Conniption object which holds the state of the board
 	#   max_depth - a integer representing the depth the min-max search
+	#	saveVistied - a Boolean value to save visited states or not
 	#	
 	#	Outputs - a Conniption object with the best next move based on the max search depth
-	def alpha_beta_search(self, board, max_depth):
+	#	Note: saveVisited is defaulted to false to reduce overhead
+	def alpha_beta_search(self, board, max_depth, saveVisited=False):
 		self.max_depth = max_depth
+		self.saveVisited = saveVisited
 		infinity = float('inf')
 		alpha = -infinity
 		beta = infinity
@@ -39,14 +42,17 @@ class AlphaBeta:
 	#	Note: recursion helper method of finding the max value for a given depth
 	def max_value(self, state, depth, alpha, beta):
 		if depth >= self.max_depth:
-			global visited
-			if state in visited:
-				#print("found in dict")
-				return visited.get(state)
+			if self.saveVisited:
+				global visited
+				if state in visited:
+					print("found in dict")
+					return visited.get(state)
+				else:
+					eval = state.evalBoard()
+					visited[state]= eval
+					return eval
 			else:
-				eval = state.evalBoard()
-				visited[state]= eval
-				return eval
+				return state.evalBoard()
 
 		infinity = float('inf')
 		value = -infinity
@@ -69,14 +75,17 @@ class AlphaBeta:
 	#	Note: recursion helper method of finding the max value for a given depth
 	def min_value(self, state, depth, alpha, beta):
 		if depth >= self.max_depth:
-			global visited
-			if state in visited:
-				#print("found in dict")
-				return visited.get(state)
+			if self.saveVisited:
+				global visited
+				if state in visited:
+					#print("found in dict")
+					return visited.get(state)
+				else:
+					eval = state.evalBoard()
+					visited[state]= eval
+					return eval
 			else:
-				eval = state.evalBoard()
-				visited[state] = eval
-				return eval
+				return state.evalBoard()
 
 		infinity = float('inf')
 		value = infinity
