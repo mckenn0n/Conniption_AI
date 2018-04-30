@@ -4,6 +4,7 @@ import time
 ## Global dictionary to save states and their evaluations
 visited = {}
 
+
 class AlphaBeta:
 
 	##Parameters:
@@ -102,8 +103,10 @@ if __name__ == "__main__":
 	t, f  = True, False
 	b = ((t,f),(f,t),(t,f),(f,t),(t,f),(f,t),(t,f))
 	testBoard = Conniption(b, True, (4,4), True)
+	start = time.time()
 	search = AlphaBeta()
 	start = time.time()
-	result = search.alpha_beta_search(testBoard,6)
+	result = search.alpha_beta_search(testBoard,4)
 	print(time.time() - start)
 	print(result[0],'\nScore for player is',result[1])
+	

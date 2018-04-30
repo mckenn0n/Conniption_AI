@@ -179,7 +179,7 @@ class Conniption:
 		for y in range(5,-1,-1):
 			for x in range(0,7):
 				try:
-					retStr += "W " if self.board[x][y] else "B "
+					retStr += "\033[1;37;40mW\33[0m " if self.board[x][y] else "\033[1;36;40mB\033[0m "
 				except:
 					retStr += "o "
 			retStr = retStr[:-1] + "\n"
@@ -189,7 +189,7 @@ class Conniption:
 		retStr += "Player " + ("1" if self.player1Turn else "2") + " places next"
 		return retStr
 
-	##May want to change this. FYI: this method defines how a object is printed when
+	##May want to change this. FYI: this method defines how an object is printed when
 	# you print an object that contains a conniption board. For example, this prevents
 	# print([Conniption()]) from yielding the string "[<Conniption object at x...>]"
 	#
