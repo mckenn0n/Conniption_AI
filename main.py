@@ -29,14 +29,12 @@ def checkWins(board, move, player1Turn):
         if wins[0] == wins[1]:
             if wins[0]: #both have line of 4
                 return (1 if player1Turn else -1)
-            else:   # neither have line of 4
-                return 0
         else:
             if wins[0]: #player1 has line of 4
                 return 1
             else: #player2 has line of 4
                 return -1
-
+    return 0
 firstMove = 0
 print("**Players**")
 print("  1) White will always be the opponent\n  2) Blue will always be you (The player)\n") #TAGGED as made more understandable
@@ -89,8 +87,12 @@ while True:
             print("Suggested Move: " + curBoard.resMove)
             print("Predicted path value: " + str(value))
             print('\n',curBoard, sep = '') #TAGGED as make game easier to play.
-            if win == 1: print("Player1 has won")
-            elif win == -1: print("Player2 has won")
+            if win == 1: 
+                print("Player1 has won")
+                break
+            elif win == -1: 
+                print("Player2 has won")
+                break
     else:       #Move made where com.string describes that move
         if curBoard.player1Turn:
             print("You should only input specific moves when player 2 is the next person to place a piece.")
@@ -109,6 +111,10 @@ while True:
             else:
                 print("Player 2 played move " + com.string + ".")
                 print('\n',curBoard, sep = '') #TAGGED as make game easier to play.
-            if win == 1: print("Player1 has won")
-            elif win == -1: print("Player2 has won")
+            if win == 1: 
+                print("Player1 has won")
+                break
+            elif win == -1: 
+                print("Player2 has won")
+                break
 print("Thanks for playing.")
