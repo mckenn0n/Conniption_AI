@@ -1,4 +1,4 @@
-from Conniption import Conniption
+from Conniption import Conniption, isWin
 from Alpha_Beta_Search import AlphaBeta
 import re
 import time
@@ -17,6 +17,25 @@ def displayCommands():
     
     print("\n**Players**")
     print("  1) White will always be the opponent\n  W = White\n  2) Blue will always be you (The player)\n  B = Blue")
+
+def checkWins(board, move, player1Turn):
+    curBoard = [list(c) for c in board]
+    for c in move:
+        if c == 'f':
+            curBoard = [list(reversed(col)) for col in curBoard]
+        else:
+            curBoard[int(c) - 1].append(player1Turn)
+        wins = isWin(curBoard)
+        if wins[0] == wins[1]:
+            if wins[0]: #both have line of 4
+                return (1 if player1Turn else -1)
+            else:   # neither have line of 4
+                return 0
+        else:
+            if wins[0]: #player1 has line of 4
+                return 1
+            else: #player2 has line of 4
+                return -1
 
 firstMove = 0
 print("**Players**")
@@ -57,7 +76,6 @@ while True:
         else:
             print("Cannot undo past the current state.")
         print('\n',curBoard, sep = '') #TAGGED as make game easier to play.
-    #TODO: Maybe implement win/loss state checker for this and the following command.
     elif com.string[0] == "s": #search with current board as root
         if not curBoard.player1Turn:
             print("There is no reason to search when player 2 is the next person to place a piece.")
@@ -67,14 +85,18 @@ while True:
             start = time.time()
             curBoard, value = search.alpha_beta_search(curBoard, searchDepth)
             print(start -time.time())
+            win = checkWins(curBoard.parent.board, curBoard.resMove, not curBoard.player1Turn)
             print("Suggested Move: " + curBoard.resMove)
             print("Predicted path value: " + str(value))
             print('\n',curBoard, sep = '') #TAGGED as make game easier to play.
+            if win == 1: print("Player1 has won")
+            elif win == -1: print("Player2 has won")
     else:       #Move made where com.string describes that move
         if curBoard.player1Turn:
             print("You should only input specific moves when player 2 is the next person to place a piece.")
         else:
             found = False
+            win = checkWins(curBoard.board, com.string, curBoard.player1Turn)
             curBoard.genChildStates()
             for ch in curBoard.children:
                 if ch.resMove == com.string:
@@ -87,4 +109,6 @@ while True:
             else:
                 print("Player 2 played move " + com.string + ".")
                 print('\n',curBoard, sep = '') #TAGGED as make game easier to play.
+            if win == 1: print("Player1 has won")
+            elif win == -1: print("Player2 has won")
 print("Thanks for playing.")
