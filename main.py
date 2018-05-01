@@ -1,6 +1,7 @@
 from Conniption import Conniption
 from Alpha_Beta_Search import AlphaBeta
 import re
+import time
 
 def displayCommands():
     print("Available commands:")
@@ -63,7 +64,9 @@ while True:
         else:
             try: curBoard.parent.parent = None #remove reference to allow garbage collection
             except: pass
+            start = time.time()
             curBoard, value = search.alpha_beta_search(curBoard, searchDepth)
+            print(start -time.time())
             print("Suggested Move: " + curBoard.resMove)
             print("Predicted path value: " + str(value))
             print('\n',curBoard, sep = '') #TAGGED as make game easier to play.
