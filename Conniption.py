@@ -34,7 +34,7 @@ class Conniption:
 		self.parent = parent
 		self.resMove = resultingMove
 		self.us_weights = [0, 1, 8, 128, 99999, 99999, 99999, 99999]
-		self.them_weights = [0, 1, 8, 1280, 999990, 999990, 999990, 999990]
+		self.them_weights = [0, 1, 8, 128, 99999, 99999, 99999, 99999]
 		self.children = None
 		
 	##Places a piece in the associated column.
