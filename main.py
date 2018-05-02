@@ -76,7 +76,12 @@ for i in range(rep):
 				com = re.fullmatch(commands, 's') #Auto search on AI turn
 			else:
 				if player_two_rand:
-					com = re.fullmatch(commands, str(randint(1,7))) #Random play #TODO allow random to flip
+					one = ''
+					two = ''
+					if curBoard.flipsRem[1] != 0:
+						if randint(0,11) == 3: one = 'f'
+						if randint(0,11) == 8: two = 'f'
+					com = re.fullmatch(commands, one+str(randint(1,7))+two) #Random play #TODO allow random to flip
 				else:
 					com = re.fullmatch(commands, input(prompt).lower()) 
 			if com is None: print("Invalid command. Type 'h' or 'help' to see a list of allowed commands.")
