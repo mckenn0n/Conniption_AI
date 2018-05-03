@@ -48,11 +48,11 @@ class AlphaBeta:
 				if state in visited:
 					return visited.get(state)
 				else:
-					eval = state.evalBoard()
+					eval = state.betterEval()
 					visited[state]= eval
 					return eval
 			else:
-				return state.evalBoard()
+				return state.betterEval()
 
 		infinity = float('inf')
 		value = -infinity
@@ -80,11 +80,11 @@ class AlphaBeta:
 				if state in visited:
 					return visited.get(state)
 				else:
-					eval = state.evalBoard()
+					eval = state.betterEval()
 					visited[state]= eval
 					return eval
 			else:
-				return state.evalBoard()
+				return state.betterEval()
 
 		infinity = float('inf')
 		value = infinity

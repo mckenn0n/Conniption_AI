@@ -81,7 +81,7 @@ for i in range(rep):
 					if curBoard.flipsRem[1] != 0:
 						if randint(0,11) == 3: one = 'f'
 						if randint(0,11) == 8: two = 'f'
-					com = re.fullmatch(commands, one+str(randint(1,7))+two) #Random play #TODO allow random to flip
+					com = re.fullmatch(commands, one+str(randint(1,7))+two) #Random play
 				else:
 					com = re.fullmatch(commands, input(prompt).lower()) 
 			if com is None: print("Invalid command. Type 'h' or 'help' to see a list of allowed commands.")
@@ -94,7 +94,7 @@ for i in range(rep):
 			print(curBoard)
 		elif com.string[0] == "u": #undo most recent move
 			if curBoard.parent is not None:
-				curBoard = curBoard.parent
+				curBoard = curBoard.parent.parent
 				print("Board state rolled back by one move.")
 			else:
 				print("Cannot undo past the current state.")
