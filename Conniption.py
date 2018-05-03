@@ -174,7 +174,10 @@ class Conniption:
 				p1Sum = sum(1 for i in range(4) if b[line[i][0]][line[i][1]] is True)
 				p1Sum -= sum(1 for i in range(4) if b[line[i][0]][line[i][1]] is False)
 				if p1Sum > 0:
-					lineWeight += p1Sum * us_weights[sum(1 for i in range(4) if b[line[i][0]][line[i][1]] is True)]
+					if p1Sum == 3:
+						lineWeight = 2000
+					else:
+						lineWeight += p1Sum * us_weights[sum(1 for i in range(4) if b[line[i][0]][line[i][1]] is True)]
 				elif p1Sum < 0:
 					lineWeight += p1Sum * them_weights[sum(1 for i in range(4) if b[line[i][0]][line[i][1]] is False)]
 			else:
@@ -182,14 +185,14 @@ class Conniption:
 				p2Sum = sum(1 for i in range(4) if b[line[i][0]][line[i][1]] is False)
 				if p1Sum > 0:
 					if p2Sum == 0:
-						lineWeight = p1Sum * us_weights[p1Sum]
+						lineWeight += p1Sum * us_weights[p1Sum]
 				elif p2Sum > 0:
 					lineWeight += p2Sum * them_weights[p2Sum]
 			one_score += lineWeight
 			# for cell in line:
 			# 	if b[cell[0]][cell[1]] is not None:
 			#   		one_score += cell_weights[cell[0]][cell[1]] * lineWeight
-		diffWeight = ((self.flipsRem[0] - self.flipsRem[1]) ** 2) * 100
+		diffWeight = ((self.flipsRem[0] - self.flipsRem[1]) ** 2) * 40
 		if self.flipsRem[0] < self.flipsRem[1]: diffWeight = -diffWeight
 		one_score += diffWeight
 		one_score += 1500 if self.canFlip else -1500

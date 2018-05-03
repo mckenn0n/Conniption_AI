@@ -34,8 +34,10 @@ class AlphaBeta:
 				if value > alpha:
 					alpha = value
 					best_state = state
+			if value == -1000000:
+				return best_state,value
 			best_states.append([best_state, value])
-		print(*best_states, sep="\n")			#For testing purposes
+		#print(*best_states, sep="\n")			#For testing purposes
 		return max(best_states, key=lambda x: x[1])
 
 	##Parameters:
@@ -107,8 +109,8 @@ class AlphaBeta:
 ##Generate a random board for testing purposes
 if __name__ == "__main__":
 	t, f  = True, False
-	b = (tuple(),tuple(),(t,f),(t,f),(t,),tuple(),tuple())
-	testBoard = Conniption(b, False, (4,4), True)
+	b = ((f,f,f),tuple(),tuple(),(t,),(t,),(t,),tuple())
+	testBoard = Conniption(b, True, (4,4), True)
 	start = time.time()
 	search = AlphaBeta()
 	start = time.time()
