@@ -63,7 +63,7 @@ rep = int(input("How many times would you like to play the game with these setti
 for i in range(rep):
 	curBoard = Conniption(player1Turn=firstMove)
 	search = AlphaBeta()
-	searchDepth = 4
+	searchDepth = 6
 
 	commands = re.compile("q(uit)?|h(elp)?|d(isp)?|u(ndo)?|s(earch)?|f?[1-7]{1}f?")
 
@@ -105,9 +105,9 @@ for i in range(rep):
 			else:
 				try: curBoard.parent.parent = None #remove reference to allow garbage collection
 				except: pass
-				# start = time.time()
+				start = time.time()
 				curBoard, value = search.alpha_beta_search(curBoard, searchDepth)
-				# print(time.time() - start)
+				print(time.time() - start)
 				win = checkWins(curBoard.parent.board, curBoard.resMove, not curBoard.player1Turn)
 				print("Suggested Move: " + curBoard.resMove)
 				print("Predicted path value: " + str(value))
