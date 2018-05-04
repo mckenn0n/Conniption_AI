@@ -27,14 +27,14 @@ class AlphaBeta:
 
 		best_states = []
 
-		for i in range(2,max_depth+1):
+		for i in range(1,max_depth+1):
 			value = 0
 			for state in board.children:
 				value = self.min_value(state, depth+1, i, alpha, beta)
 				if value > alpha:
 					alpha = value
 					best_state = state
-			if value == -1000000:
+			if value >= 1000000 and i == 1:
 				return best_state,value
 			best_states.append([best_state, value])
 		#print(*best_states, sep="\n")			#For testing purposes
