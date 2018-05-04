@@ -34,7 +34,7 @@ class AlphaBeta:
 				if value > alpha:
 					alpha = value
 					best_state = state
-			if value >= 1000000 and i == 1:
+			if value > 1000000 and i == 1:
 				return best_state,value
 			best_states.append([best_state, value])
 		#print(*best_states, sep="\n")			#For testing purposes

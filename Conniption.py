@@ -154,14 +154,15 @@ class Conniption:
 
 	def betterEval(self):
 		win = isWin(self.board)
+		# print(self.flipsRem[1],self.flipsRem[0],(self.flipsRem[1] - self.flipsRem[0]))
 		if win[0]:
 			if win[1]:
 				if self.player1Turn:
-					return 1000000
+					return 1000000 - ((self.flipsRem[1] - self.flipsRem[0]) * 10000)
 				else:
 					return -1000000
 			else:
-				return 1000000
+				return 1000000 - ((self.flipsRem[1] - self.flipsRem[0]) * 10000)
 		elif win[1]:
 			return -1000000
 		one_score = 0
@@ -176,6 +177,8 @@ class Conniption:
 				if p1Sum > 0:
 					if p1Sum == 3:
 						lineWeight = 1000
+					elif p1Sum == 4:
+						return 1000000 - ((self.flipsRem[1] - self.flipsRem[0]) * 10000)
 					else:
 						lineWeight = p1Sum * us_weights[sum(1 for i in range(4) if b[line[i][0]][line[i][1]] is True)]
 				elif p1Sum < 0:
@@ -192,7 +195,7 @@ class Conniption:
 			# for cell in line:
 			# 	if b[cell[0]][cell[1]] is not None:
 			#   		one_score += cell_weights[cell[0]][cell[1]] * lineWeight
-		diffWeight = ((self.flipsRem[0] - self.flipsRem[1]) ** 2) * 40
+		diffWeight = ((self.flipsRem[0] - self.flipsRem[1]) ** 2) * 1000
 		if self.flipsRem[0] < self.flipsRem[1]: diffWeight = -diffWeight
 		one_score += diffWeight
 		one_score += 150 if self.canFlip else -150
