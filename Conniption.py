@@ -254,7 +254,7 @@ class Conniption:
 	# represented by the char "W" and player2 chips by the char "B". The char
 	# "o" represents an empty space
 	def __str__(self):
-		retStr = "1 2 3 4 5 6 7"
+		retStr = "1 2 3 4 5 6 7\n"
 		for y in range(5,-1,-1):
 			for x in range(0,7):
 				try:
