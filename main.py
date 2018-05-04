@@ -67,7 +67,6 @@ for i in range(rep):
 		searchDepth = 4
 	else:
 		searchDepth = 6
-
 	commands = re.compile("q(uit)?|h(elp)?|d(isp)?|u(ndo)?|s(earch)?|f?[1-7]{1}f?")
 
 	displayCommands()
