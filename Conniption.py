@@ -306,14 +306,14 @@ class Conniption:
 	# represented by the char "W" and player2 chips by the char "B". The char
 	# "o" represents an empty space
 	def __str__(self):
-		retStr = "1 2 3 4 5 6 7\n"
+		retStr = "|\033[2;30;47m1\033[0m|\033[2;30;47m2\033[0m|\033[2;30;47m3\033[0m|\033[2;30;47m4\033[0m|\033[2;30;47m5\033[0m|\033[2;30;47m6\033[0m|\033[2;30;47m7\033[0m|\n"
 		for y in range(5,-1,-1):
 			for x in range(0,7):
 				try:
-					retStr += "\033[1;37;40mW\33[0m " if self.board[x][y] else "\033[1;36;40mB\033[0m "
+					retStr += "|\033[1;37;40mW\33[0m" if self.board[x][y] else "|\033[1;36;40mB\033[0m"
 				except:
-					retStr += "o "
-			retStr = retStr[:-1] + "\n"
+					retStr += "|o"
+			retStr = retStr + "|\n"
 		retStr += "White flips:  " + str(self.flipsRem[0]) + "\n"
 		retStr += "Blue flips:   " + str(self.flipsRem[1]) + "\n"
 		retStr += "Able to flip: " + str(self.canFlip) + "\n"
