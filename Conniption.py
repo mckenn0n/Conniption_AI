@@ -199,6 +199,56 @@ class Conniption:
 		one_score += diffWeight
 		one_score += 150 if self.canFlip else -150
 		return one_score
+
+	def testSecondEval(self):
+		win = isWin(self.board)
+		if win[0]:
+			if win[1]:
+				if self.player1Turn:
+					return 1000000 - ((self.flipsRem[1] - self.flipsRem[0]) * 10000)
+				else:
+					return -10000000 #has been changed #Changing to -10000000 is better for defence
+			else:
+				return 1000000 - ((self.flipsRem[1] - self.flipsRem[0]) * 10000)
+		elif win[1]:
+			return -10000000 #has been changed #Changing to -10000000 is better for defence
+		one_score = 0
+		b = [[self.board[col][row] for row in range(len(self.board[col]))] + [None] * (6 - len(self.board[col])) for col in range(7)]
+		isVert = lambda x: x[0][0] == x[1][0] == x[2][0] == x[3][0]
+		for line in win_lines:
+			lineVals = [b[cell[0]][cell[1]] for cell in line]
+			lineWeight = 0
+			if not isVert(line):
+				p1Sum = sum(1 for i in range(4) if b[line[i][0]][line[i][1]] is True)
+				p1Sum -= sum(1 for i in range(4) if b[line[i][0]][line[i][1]] is False)
+				if p1Sum > 0:
+					if p1Sum == 3:
+						lineWeight = 2000
+					elif p1Sum == 4:
+						return 1000000 - ((self.flipsRem[1] - self.flipsRem[0]) * 10000)
+					else:
+						lineWeight = us_weights[sum(1 for i in range(4) if b[line[i][0]][line[i][1]] is True)]
+				elif p1Sum < 0:
+					lineWeight = p1Sum * them_weights[sum(1 for i in range(4) if b[line[i][0]][line[i][1]] is False)]
+					if p1Sum == -4:
+						return -10000000 #Added
+			else:
+				p1Sum = sum(1 for i in range(4) if b[line[i][0]][line[i][1]] is True)
+				p2Sum = sum(1 for i in range(4) if b[line[i][0]][line[i][1]] is False)
+				if p1Sum > 0:
+					if p2Sum == 0:
+						lineWeight = us_weights[p1Sum]
+				elif p2Sum > 0:
+					lineWeight = p2Sum * them_weights[p2Sum]
+			one_score += lineWeight
+			# for cell in line:
+			# 	if b[cell[0]][cell[1]] is not None:
+			#   		one_score += cell_weights[cell[0]][cell[1]] * lineWeight
+		diffWeight = ((self.flipsRem[0] - self.flipsRem[1]) ** 2) * 1000
+		if self.flipsRem[0] < self.flipsRem[1]: diffWeight = -diffWeight
+		one_score += diffWeight
+		one_score += 150 if self.canFlip else -150
+		return one_score
 	##This returns all of the states that are legally reachable by the end of the
 	# current (half) turn. This method will generate all children states that
 	# include no flips(noFlip), a flip before placing a chip(preFlip), a flip
