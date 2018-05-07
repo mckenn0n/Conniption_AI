@@ -66,7 +66,10 @@ for i in range(rep):
 	if choice[0].lower() == "y":
 		searchDepth = 4
 	else:
-		searchDepth = 6 #Search depth of 5 is good for when AI goes second
+		if(firstMove):
+			searchDepth = 6 #Search depth of 5 is good for when AI goes second
+		else:
+			searchDepth = 5
 	commands = re.compile("q(uit)?|h(elp)?|d(isp)?|u(ndo)?|s(earch)?|f?[1-7]{1}f?")
 
 	displayCommands()
