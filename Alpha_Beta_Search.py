@@ -34,8 +34,8 @@ class AlphaBeta:
 				if value > alpha:
 					alpha = value
 					best_state = state
-			if value > 1000000 and i == 1: #Removing this line make the AI better at defence when playing second
-				return best_state,value #Removing this line make the AI better at defence when playing second
+			if value > 1000000 and i == 1:
+				return best_state,value
 			best_states.append([best_state, value])
 		print(*best_states, sep="\n")			#For testing purposes
 		return max(best_states, key=lambda x: x[1])
