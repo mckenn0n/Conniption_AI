@@ -37,7 +37,7 @@ class AlphaBeta:
 			if value > 1000000 and i == 1: #Removing this line make the AI better at defence when playing second
 				return best_state,value #Removing this line make the AI better at defence when playing second
 			best_states.append([best_state, value])
-		#print(*best_states, sep="\n")			#For testing purposes
+		print(*best_states, sep="\n")			#For testing purposes
 		return max(best_states, key=lambda x: x[1])
 
 	##Parameters:
@@ -55,11 +55,11 @@ class AlphaBeta:
 				if state in visited:
 					return visited.get(state)
 				else:
-					eval = state.betterEval()
+					eval = state.testSecondEval()
 					visited[state]= eval
 					return eval
 			else:
-				return state.betterEval()
+				return state.testSecondEval()
 
 		infinity = float('inf')
 		value = -infinity
@@ -88,11 +88,11 @@ class AlphaBeta:
 				if state in visited:
 					return visited.get(state)
 				else:
-					eval = state.betterEval()
+					eval = state.testSecondEval()
 					visited[state]= eval
 					return eval
 			else:
-				return state.betterEval()
+				return state.testSecondEval()
 
 		infinity = float('inf')
 		value = infinity
