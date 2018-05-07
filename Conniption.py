@@ -25,14 +25,6 @@ win_lines = [[(0, 0), (1, 0), (2, 0), (3, 0)], [(1, 0), (2, 0), (3, 0), (4, 0)],
 			 [(0, 0), (1, 1), (2, 2), (3, 3)], [(1, 1), (2, 2), (3, 3), (4, 4)], [(2, 2), (3, 3), (4, 4), (5, 5)], 
 			 [(0, 1), (1, 2), (2, 3), (3, 4)], [(1, 2), (2, 3), (3, 4), (4, 5)], [(0, 2), (1, 3), (2, 4), (3, 5)]]
 
-cell_weights = [[3,  4,  5,  5,  4, 3],
-				[4,  6,  8,  8,  6, 4], 
-				[5,  8, 11, 11,  8, 5], 
-				[7, 10, 13, 13, 10, 7], 
-				[5,  8, 11, 11,  8, 5], 
-				[4,  6,  8,  8,  6, 4], 
-				[3,  4,  5,  5,  4, 3]]
-
 us_weights   = [0, 1, 8, 128, 99999, 99999, 99999, 99999]
 them_weights = [0, -1, -16, -200, -99999, -99999, -99999, -99999]
 
@@ -110,48 +102,7 @@ class Conniption:
 
 		self.board = [tuple(reversed(x)) for x in self.board]
 		self.canFlip = False
-
-	#TODO: IMPLEMENT: This should be the objective function for comparing boards
-	#				 Should return an int/float. For Consistency, player1
-	#				 advantage should be positive and player2 advantage
-	#				 should be negative.
-	#IDEA: extend every chip line to length 4 or until blocked and count number of lines that are = length 4
-	#			then subtract the same for opponent. Adding the result from the flipped version
-	#			of the board will allow considering of flip results. Probably would need to add
-	#			the current length of that line to allow weighting of partial lines.
-	#				PROBLEM: doesn't consider broken lines that can be improved using flip moves.
-	#					ex.	on board below, neither broken line of 3 will be considered despite being very valuable
-	#						o o o o o o o
-	#						o o o o o o o
-	#						o o o W o o o
-	#						o o o B W o o
-	#						o o o B B B o
-	#						o o o W B W W
-	#					Another problem: not affected by the number of remaining flips or (maybe) possibility of flips
-	def evalBoard(self):
-		# Two sets of weights, one for the us (our AI) and one for them (their AI)
-		# TODO Keep track of number in a line
-		one_score = 0
-		b = [list(c) for c in self.board]
-		p1Lines, p2Lines = genPosLines(b)
-		for c in range(7):
-			for r in range(6):
-				for li in range(4):
-					one_score += us_weights[p1Lines[c][r][li]] - them_weights[p2Lines[c][r][li]]
-
-		flipped = [list(reversed(c)) for c in self.board]
-		p1Lines, p2Lines = genPosLines(flipped)
-		for c in range(7):
-			for r in range(6):
-				for li in range(4):
-					one_score += us_weights[p1Lines[c][r][li]] - them_weights[p2Lines[c][r][li]]
-		diffWeight = ((self.flipsRem[0] - self.flipsRem[1]) ** 2) * 50
-		if self.flipsRem[0] < self.flipsRem[1]: diffWeight = -diffWeight
-		one_score += diffWeight
-		one_score += 150 if self.canFlip else -150
-
-		return one_score
-
+	##
 	def betterEval(self):
 		win = isWin(self.board)
 		if win[0]:
@@ -191,64 +142,60 @@ class Conniption:
 				elif p2Sum > 0:
 					lineWeight = p2Sum * them_weights[p2Sum]
 			one_score += lineWeight
-			# for cell in line:
-			# 	if b[cell[0]][cell[1]] is not None:
-			#   		one_score += cell_weights[cell[0]][cell[1]] * lineWeight
 		diffWeight = ((self.flipsRem[0] - self.flipsRem[1]) ** 2) * 1000
 		if self.flipsRem[0] < self.flipsRem[1]: diffWeight = -diffWeight
 		one_score += diffWeight
 		one_score += 150 if self.canFlip else -150
 		return one_score
 
-	def testSecondEval(self):
-		win = isWin(self.board)
-		if win[0]:
-			if win[1]:
-				if self.player1Turn:
-					return 1000000 - ((self.flipsRem[1] - self.flipsRem[0]) * 10000)
-				else:
-					return -10000000 #has been changed #Changing to -10000000 is better for defence
-			else:
-				return 1000000 - ((self.flipsRem[1] - self.flipsRem[0]) * 10000)
-		elif win[1]:
-			return -10000000 #has been changed #Changing to -10000000 is better for defence
-		one_score = 0
-		b = [[self.board[col][row] for row in range(len(self.board[col]))] + [None] * (6 - len(self.board[col])) for col in range(7)]
-		isVert = lambda x: x[0][0] == x[1][0] == x[2][0] == x[3][0]
-		for line in win_lines:
-			lineVals = [b[cell[0]][cell[1]] for cell in line]
-			lineWeight = 0
-			if not isVert(line):
-				p1Sum = sum(1 for i in range(4) if b[line[i][0]][line[i][1]] is True)
-				p1Sum -= sum(1 for i in range(4) if b[line[i][0]][line[i][1]] is False)
-				if p1Sum > 0:
-					if p1Sum == 3:
-						lineWeight = 2000
-					elif p1Sum == 4:
-						return 1000000 - ((self.flipsRem[1] - self.flipsRem[0]) * 10000)
-					else:
-						lineWeight = us_weights[sum(1 for i in range(4) if b[line[i][0]][line[i][1]] is True)]
-				elif p1Sum < 0:
-					lineWeight = p1Sum * them_weights[sum(1 for i in range(4) if b[line[i][0]][line[i][1]] is False)]
-					if p1Sum == -4:
-						return -10000000 #Added
-			else:
-				p1Sum = sum(1 for i in range(4) if b[line[i][0]][line[i][1]] is True)
-				p2Sum = sum(1 for i in range(4) if b[line[i][0]][line[i][1]] is False)
-				if p1Sum > 0:
-					if p2Sum == 0:
-						lineWeight = us_weights[p1Sum]
-				elif p2Sum > 0:
-					lineWeight = p2Sum * them_weights[p2Sum]
-			one_score += lineWeight
-			# for cell in line:
-			# 	if b[cell[0]][cell[1]] is not None:
-			#   		one_score += cell_weights[cell[0]][cell[1]] * lineWeight
-		diffWeight = ((self.flipsRem[0] - self.flipsRem[1]) ** 2) * 1000
-		if self.flipsRem[0] < self.flipsRem[1]: diffWeight = -diffWeight
-		one_score += diffWeight
-		one_score += 150 if self.canFlip else -150
-		return one_score
+	# def testSecondEval(self):
+	# 	win = isWin(self.board)
+	# 	if win[0]:
+	# 		if win[1]:
+	# 			if self.player1Turn:
+	# 				return 1000000 - ((self.flipsRem[1] - self.flipsRem[0]) * 10000)
+	# 			else:
+	# 				return -10000000 #has been changed #Changing to -10000000 is better for defence
+	# 		else:
+	# 			return 1000000 - ((self.flipsRem[1] - self.flipsRem[0]) * 10000)
+	# 	elif win[1]:
+	# 		return -10000000 #has been changed #Changing to -10000000 is better for defence
+	# 	one_score = 0
+	# 	b = [[self.board[col][row] for row in range(len(self.board[col]))] + [None] * (6 - len(self.board[col])) for col in range(7)]
+	# 	isVert = lambda x: x[0][0] == x[1][0] == x[2][0] == x[3][0]
+	# 	for line in win_lines:
+	# 		lineVals = [b[cell[0]][cell[1]] for cell in line]
+	# 		lineWeight = 0
+	# 		if not isVert(line):
+	# 			p1Sum = sum(1 for i in range(4) if b[line[i][0]][line[i][1]] is True)
+	# 			p1Sum -= sum(1 for i in range(4) if b[line[i][0]][line[i][1]] is False)
+	# 			if p1Sum > 0:
+	# 				if p1Sum == 3:
+	# 					lineWeight = 2000
+	# 				elif p1Sum == 4:
+	# 					return 1000000 - ((self.flipsRem[1] - self.flipsRem[0]) * 10000)
+	# 				else:
+	# 					lineWeight = us_weights[sum(1 for i in range(4) if b[line[i][0]][line[i][1]] is True)]
+	# 			elif p1Sum < 0:
+	# 				lineWeight = p1Sum * them_weights[sum(1 for i in range(4) if b[line[i][0]][line[i][1]] is False)]
+	# 				if p1Sum == -4:
+	# 					return -10000000 #Added
+	# 		else:
+	# 			p1Sum = sum(1 for i in range(4) if b[line[i][0]][line[i][1]] is True)
+	# 			p2Sum = sum(1 for i in range(4) if b[line[i][0]][line[i][1]] is False)
+	# 			if p1Sum > 0:
+	# 				if p2Sum == 0:
+	# 					lineWeight = us_weights[p1Sum]
+	# 			elif p2Sum > 0:
+	# 				lineWeight = p2Sum * them_weights[p2Sum]
+	# 		one_score += lineWeight
+	# 	diffWeight = ((self.flipsRem[0] - self.flipsRem[1]) ** 2) * 1000
+	# 	if self.flipsRem[0] < self.flipsRem[1]: diffWeight = -diffWeight
+	# 	one_score += diffWeight
+	# 	one_score += 150 if self.canFlip else -150
+	# 	return one_score
+
+	
 	##This returns all of the states that are legally reachable by the end of the
 	# current (half) turn. This method will generate all children states that
 	# include no flips(noFlip), a flip before placing a chip(preFlip), a flip
@@ -352,86 +299,6 @@ def isWin(board):
 		except:
 			pass
 	return p1Win, p2Win
-
-#SHOULD ONLY BE CALLED FROM THE evalBoard METHOD 
-def genPosLines(board):
-	pos = []
-	neg = []
-	for c in range(7):
-		pos.append([])
-		neg.append([])
-		for r in range(6):
-			try:
-				if board[c][r]:
-					pos[c].append(True)
-					neg[c].append(False)
-				else:
-					pos[c].append(False)
-					neg[c].append(True)
-			except:
-				pos[c].append(True)
-				neg[c].append(True)
-	pos[0][0] = [1,1,1,1] if pos[0][0] else [0,0,0,0]
-	neg[0][0] = [1,1,1,1] if neg[0][0] else [0,0,0,0]
-
-	for c in range(1,7):
-		if pos[c][0]:
-			pos[c][0] = [1,pos[c-1][0][1] + 1,1,1]
-			pos[c-1][0][1] = 0
-		else:
-			pos[c][0] = [0,0,0,0]
-			if pos[c-1][0][1] < 4: pos[c-1][0][1] = 0
-		if neg[c][0]:
-			neg[c][0] = [1,neg[c-1][0][1] + 1,1,1]
-			neg[c-1][0][1] = 0
-		else:
-			neg[c][0] = [0,0,0,0]
-			if neg[c-1][0][1] < 4: neg[c-1][0][1] = 0
-
-	for r in range(1,6):
-		if not pos[0][r]:
-			pos[0][r] = [1,1,1,pos[0][r-1][3]+1]
-			pos[0][r-1][3] = 0
-		else:
-			pos[0][r] = [0,0,0,0]
-			if pos[0][r-1][3] < 4: pos[0][r-1][3] = 0
-		if not neg[0][r]:
-			neg[0][r] = [1,1,1,neg[0][r-1][3]+1]
-			neg[0][r-1][3] = 0
-		else:
-			neg[0][r] = [0,0,0,0]
-			if neg[0][r-1][3] < 4: neg[0][r-1][3] = 0
-
-	for c in range(1,7):
-		for r in range(1,6):
-			if pos[c][r]:
-				if r == 5:
-					pos[c][r] = [1, pos[c-1][r][1] + 1, pos[c-1][r-1][2] + 1, pos[c][r-1][3] + 1]
-					pos[c-1][r][1], pos[c-1][r-1][2], pos[c][r-1][3] = 0,0,0
-				else:
-					pos[c][r] = [pos[c-1][r+1][0] + 1, pos[c-1][r][1] + 1, pos[c-1][r-1][2] + 1, pos[c][r-1][3] + 1]
-					pos[c-1][r+1][0], pos[c-1][r][1], pos[c-1][r-1][2], pos[c][r-1][3] = 0,0,0,0
-			else:
-				pos[c][r] = [0,0,0,0]
-				if r != 5 and pos[c-1][r+1][0] < 4: pos[c-1][r+1][0] = 0
-				if pos[c-1][r][1] < 4: pos[c-1][r][1] = 0
-				if pos[c-1][r-1][2] < 4: pos[c-1][r-1][2] = 0
-				if pos[c][r-1][3] < 4: pos[c][r-1][3] = 0
-			if neg[c][r]:
-				if r == 5:
-					neg[c][r] = [1, neg[c-1][r][1] + 1, neg[c-1][r-1][2] + 1, neg[c][r-1][3] + 1]
-					neg[c-1][r][1], neg[c-1][r-1][2], neg[c][r-1][3] = 0,0,0
-				else:
-					neg[c][r] = [neg[c-1][r+1][0] + 1, neg[c-1][r][1] + 1, neg[c-1][r-1][2] + 1, neg[c][r-1][3] + 1]
-					neg[c-1][r+1][0], neg[c-1][r][1], neg[c-1][r-1][2], neg[c][r-1][3] = 0,0,0,0
-			else:
-				neg[c][r] = [0,0,0,0]
-				if r != 5 and neg[c-1][r+1][0] < 4: neg[c-1][r+1][0] = 0
-				if neg[c-1][r][1] < 4: neg[c-1][r][1] = 0
-				if neg[c-1][r-1][2] < 4: neg[c-1][r-1][2] = 0
-				if neg[c][r-1][3] < 4: neg[c][r-1][3] = 0
-
-	return pos,neg
 
 if __name__ == "__main__":
 	t, f  = True, False
