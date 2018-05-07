@@ -37,7 +37,7 @@ class AlphaBeta:
 			if value > 1000000 and i == 1:
 				return best_state,value
 			best_states.append([best_state, value])
-		#print(*best_states, sep="\n")			#For testing purposes
+		print(*best_states, sep="\n")			#For testing purposes
 		return max(best_states, key=lambda x: x[1])
 
 	##Parameters:
