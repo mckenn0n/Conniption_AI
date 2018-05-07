@@ -110,11 +110,11 @@ class Conniption:
 				if self.player1Turn:
 					return 1000000 - ((self.flipsRem[1] - self.flipsRem[0]) * 10000)
 				else:
-					return -1000000 #Changing to -10000000 is better for defence
+					return -1000000 
 			else:
 				return 1000000 - ((self.flipsRem[1] - self.flipsRem[0]) * 10000)
 		elif win[1]:
-			return -1000000 #Changing to -10000000 is better for defence
+			return -1000000 
 		one_score = 0
 		b = [[self.board[col][row] for row in range(len(self.board[col]))] + [None] * (6 - len(self.board[col])) for col in range(7)]
 		isVert = lambda x: x[0][0] == x[1][0] == x[2][0] == x[3][0]
@@ -195,7 +195,7 @@ class Conniption:
 	# 	one_score += 150 if self.canFlip else -150
 	# 	return one_score
 
-	
+
 	##This returns all of the states that are legally reachable by the end of the
 	# current (half) turn. This method will generate all children states that
 	# include no flips(noFlip), a flip before placing a chip(preFlip), a flip
@@ -223,7 +223,7 @@ class Conniption:
 				self.children |= {Conniption(flipped[:c]+((flipped[c]+(self.player1Turn,)),)+flipped[c+1:],nextTurn,remFlips,True,self,"f"+str(c+1)) for c in range(7) if len(flipped[c]) < 6}	#PreFlip
 				if fr > 1: #Required for dualFlip
 					remFlips = (self.flipsRem[0]-2, self.flipsRem[1]) if self.player1Turn else (self.flipsRem[0],self.flipsRem[1]-2)
-					self.children |= {Conniption(self.board[:c]+(((self.player1Turn,)+self.board[c]),)+self.board[c+1:],nextTurn,remFlips,False,self,"f"+str(c+1)+"f") for c in range(7) if len(self.board[c]) < 6}	#DualFlip
+		261149			self.children |= {Conniption(self.board[:c]+(((self.player1Turn,)+self.board[c]),)+self.board[c+1:],nextTurn,remFlips,False,self,"f"+str(c+1)+"f") for c in range(7) if len(self.board[c]) < 6}	#DualFlip
 
 	##May be useful later for comparing boards to prevent revisiting equivalent
 	# states.
