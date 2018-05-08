@@ -29,7 +29,7 @@ Classes:
 
   Conniption.py
   
-  ##Alpha_Beta_Search.py
+  ## Alpha_Beta_Search.py ##
 
   This class is resposible for the game search.  The search used is iterative deepening with Alpha Beta Pruning.  The class has three methods:
 
