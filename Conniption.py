@@ -159,19 +159,20 @@ class Conniption:
 	# a chip(dualFlip).
 	def genChildStates(self):
 		if self.children is not None: return
+		order = [3,2,4,1,5,0,6]
 		nextTurn = not self.player1Turn
 		#Generate no flip children here
-		self.children = {Conniption(self.board[:c]+((self.board[c]+(self.player1Turn,)),)+self.board[c+1:],nextTurn,self.flipsRem,True,self,str(c+1)) for c in range(7) if len(self.board[c]) < 6}	#NoFlip
+		self.children = {Conniption(self.board[:c]+((self.board[c]+(self.player1Turn,)),)+self.board[c+1:],nextTurn,self.flipsRem,True,self,str(c+1)) for c in order if len(self.board[c]) < 6}	#NoFlip
 		fr = self.flipsRem[0 if self.player1Turn else 1]
 		if fr > 0:  #Required for all flips
 			flipped = tuple(tuple(reversed(c)) for c in self.board)
 			remFlips = (self.flipsRem[0]-1, self.flipsRem[1]) if self.player1Turn else (self.flipsRem[0],self.flipsRem[1]-1)
-			self.children |= {Conniption(flipped[:c]+(((self.player1Turn,)+flipped[c]),)+flipped[c+1:],nextTurn,remFlips,False,self,str(c+1)+"f") for c in range(7) if len(flipped[c]) < 6}	#PostFlip
+			self.children |= {Conniption(flipped[:c]+(((self.player1Turn,)+flipped[c]),)+flipped[c+1:],nextTurn,remFlips,False,self,str(c+1)+"f") for c in order if len(flipped[c]) < 6}	#PostFlip
 			if self.canFlip: #Required for preFlip and dualFlip
-				self.children |= {Conniption(flipped[:c]+((flipped[c]+(self.player1Turn,)),)+flipped[c+1:],nextTurn,remFlips,True,self,"f"+str(c+1)) for c in range(7) if len(flipped[c]) < 6}	#PreFlip
+				self.children |= {Conniption(flipped[:c]+((flipped[c]+(self.player1Turn,)),)+flipped[c+1:],nextTurn,remFlips,True,self,"f"+str(c+1)) for c in order if len(flipped[c]) < 6}	#PreFlip
 				if fr > 1: #Required for dualFlip
 					remFlips = (self.flipsRem[0]-2, self.flipsRem[1]) if self.player1Turn else (self.flipsRem[0],self.flipsRem[1]-2)
-					self.children |= {Conniption(self.board[:c]+(((self.player1Turn,)+self.board[c]),)+self.board[c+1:],nextTurn,remFlips,False,self,"f"+str(c+1)+"f") for c in range(7) if len(self.board[c]) < 6}	#DualFlip
+					self.children |= {Conniption(self.board[:c]+(((self.player1Turn,)+self.board[c]),)+self.board[c+1:],nextTurn,remFlips,False,self,"f"+str(c+1)+"f") for c in order if len(self.board[c]) < 6}	#DualFlip
 
 	def __eq__(self, connip):
 		if self.board == connip.board											\
