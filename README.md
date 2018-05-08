@@ -10,7 +10,13 @@ Classes:
   (for second) after the prompt. Second, you will be asked whether you wish to play against the AI
   manually or have a random agent play against the AI. After the prompt, input "Yes" if the computer
   should play randomly or "No" if you wish to play manually. Finally, you will be prompted for the
-  number of times you wish to play against the AI. This can be any integer, but moderate to large values can cause excessive memory usage due to the search keeping track of a visited list, combined with python's unreliable garbage collection. Once these options are set, a list of commands will be displayed and the game will be started. On its turn, the AI will automatically be made to search for its next move. The available commands are described below. Parenthesis indicate optional character sequences and square brackets indicate that any character in the specified range may be used.
+  number of times you wish to play against the AI. This can be any integer, but moderate to large
+  values can cause excessive memory usage due to the search keeping track of a visited list combined
+  with python's unreliable garbage collection. Once these options are set, a list of commands will
+  be displayed and the game will be started. On its turn, the AI will automatically be made to
+  search for its next move. The available commands are described below. Parenthesis indicate
+  optional character sequences and square brackets indicate that any character in the specified
+  range may be used.
 
   a. q(uit)      - Closes the program early
   b. h(elp)      - Displays a list of commands
