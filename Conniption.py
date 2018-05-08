@@ -25,14 +25,16 @@ win_lines = [[(0, 0), (1, 0), (2, 0), (3, 0)], [(1, 0), (2, 0), (3, 0), (4, 0)],
 			 [(0, 0), (1, 1), (2, 2), (3, 3)], [(1, 1), (2, 2), (3, 3), (4, 4)], [(2, 2), (3, 3), (4, 4), (5, 5)], 
 			 [(0, 1), (1, 2), (2, 3), (3, 4)], [(1, 2), (2, 3), (3, 4), (4, 5)], [(0, 2), (1, 3), (2, 4), (3, 5)]]
 
-us_weights   = [0, 1, 8, 128, 99999, 99999, 99999, 99999]
-them_weights = [0, -1, -16, -200, -99999, -99999, -99999, -99999]
+us_weights   = [0, 1, 8, 128, 99999]
+them_weights = [0, -1, -16, -200, -99999]
 
 class Conniption:
 	defaultBoard = (tuple(),tuple(), tuple(), tuple(), tuple(), tuple(), tuple())
 	##Parameters:
 	#   board - a length 7 list of boolean lists where each list is no longer
 	#		   than length 6. This is the current configuration of the board.
+	#   player1Turn - True if the AI is the next player to place a piece, False
+	#				  otherwise
 	#   flips - a 2-tuple of ints. This is the number of flips remaining for each
 	#		   player. The first element represents player1's remaining flips,
 	#		   the second represents player2's. By the standard rules, the
@@ -45,12 +47,10 @@ class Conniption:
 	#   The board configuration should be interpreted such that each list is
 	#   a column and they are ordered left to right. Each column should be read
 	#   bottom to top, with True indicating a player1 chip and False indicating
-	#   a player2 chip. For example, [[],[],[],[True,False],[],[],[]] represents
+	#   a player2 chip. For example, ((),(),(),(True,False),(),(),()) represents
 	#   a board where all columns except for the center column are empty and the
 	#   center column consists only of one player2 chip above one player1 chip.
 	#
-	#NOTE: If board is not passed as a parameter, then defaults for every field
-	#      will be used, regardless of whether they are included.
 	def __init__(self, board=defaultBoard, player1Turn=True,flips=(4,4), flippable=True, parent=None, resultingMove=None):
 		self.board = board
 		self.flipsRem = flips
@@ -59,50 +59,7 @@ class Conniption:
 		self.parent = parent
 		self.resMove = resultingMove
 		self.children = None
-		
-	##Places a piece in the associated column.
-	#   column - an int between 0 and 6. Column in which to place a piece.
-	#   player - boolean. If True, then player1 is the person that is placing
-	#			the current chip. If False, then the placer is player2.
-	#
-	#   This method causes flips to be allowed if they are currently disallowed
-	#   due to the most recent flip being too recent.
-	#
-	#   DEPRECATED (Likely Not Necessary due to no need to alter current board state)
-	#		Remove if not used in final product
-	def placePiece(self, column):
-		if isinstance(column, int) and column >= 0 and column <= 6:
-			if len(self.board[column]) < 6:
-				self.board[column] += (self.player1Turn,)
-				self.canFlip = True
-				self.player1Turn = not self.player1Turn
-			else:
-				raise RuntimeError("Column " + str(column) + " is full.")
-		else:
-			raise ValueError("Columns can only be an int between 0 and 6")
 
-	##Flips the entire board once.
-	#   player - boolean. If True, then player1 is the person   that is flipping
-	#   the board. If False, then the flipper is player2.
-	#
-	#   This method disallows further flipping until the method placePiece is
-	#   called.
-	#
-	#   DEPRECATED (Likely Not Necessary due to no need to alter current board state)
-	#		Remove if not used in final product
-	def flip(self):
-		if self.player1Turn:
-			if self.flipsRem[0] == 0:
-				raise RuntimeError("Player 1 is out of flips")
-			self.flipsRem = (self.flipsRem[0] - 1, self.flipsRem[1])
-		else:
-			if self.flipsRem[1] == 0:
-				raise RuntimeError("Player 2 is out of flips")
-			self.flipsRem = (self.flipsRem[0], self.flipsRem[1] - 1)
-
-		self.board = [tuple(reversed(x)) for x in self.board]
-		self.canFlip = False
-	##
 	def betterEval(self):
 		win = isWin(self.board)
 		if win[0]:
@@ -119,7 +76,6 @@ class Conniption:
 		b = [[self.board[col][row] for row in range(len(self.board[col]))] + [None] * (6 - len(self.board[col])) for col in range(7)]
 		isVert = lambda x: x[0][0] == x[1][0] == x[2][0] == x[3][0]
 		for line in win_lines:
-			lineVals = [b[cell[0]][cell[1]] for cell in line]
 			lineWeight = 0
 			if not isVert(line):
 				p1Sum = sum(1 for i in range(4) if b[line[i][0]][line[i][1]] is True)
@@ -149,51 +105,51 @@ class Conniption:
 		return one_score
 
 	# def testSecondEval(self):
-	# 	win = isWin(self.board)
-	# 	if win[0]:
-	# 		if win[1]:
-	# 			if self.player1Turn:
-	# 				return 1000000 - ((self.flipsRem[1] - self.flipsRem[0]) * 10000)
-	# 			else:
-	# 				return -10000000 #has been changed #Changing to -10000000 is better for defence
-	# 		else:
-	# 			return 1000000 - ((self.flipsRem[1] - self.flipsRem[0]) * 10000)
-	# 	elif win[1]:
-	# 		return -10000000 #has been changed #Changing to -10000000 is better for defence
-	# 	one_score = 0
-	# 	b = [[self.board[col][row] for row in range(len(self.board[col]))] + [None] * (6 - len(self.board[col])) for col in range(7)]
-	# 	isVert = lambda x: x[0][0] == x[1][0] == x[2][0] == x[3][0]
-	# 	for line in win_lines:
-	# 		lineVals = [b[cell[0]][cell[1]] for cell in line]
-	# 		lineWeight = 0
-	# 		if not isVert(line):
-	# 			p1Sum = sum(1 for i in range(4) if b[line[i][0]][line[i][1]] is True)
-	# 			p1Sum -= sum(1 for i in range(4) if b[line[i][0]][line[i][1]] is False)
-	# 			if p1Sum > 0:
-	# 				if p1Sum == 3:
-	# 					lineWeight = 2000
-	# 				elif p1Sum == 4:
-	# 					return 1000000 - ((self.flipsRem[1] - self.flipsRem[0]) * 10000)
-	# 				else:
-	# 					lineWeight = us_weights[sum(1 for i in range(4) if b[line[i][0]][line[i][1]] is True)]
-	# 			elif p1Sum < 0:
-	# 				lineWeight = p1Sum * them_weights[sum(1 for i in range(4) if b[line[i][0]][line[i][1]] is False)]
-	# 				if p1Sum == -4:
-	# 					return -10000000 #Added
-	# 		else:
-	# 			p1Sum = sum(1 for i in range(4) if b[line[i][0]][line[i][1]] is True)
-	# 			p2Sum = sum(1 for i in range(4) if b[line[i][0]][line[i][1]] is False)
-	# 			if p1Sum > 0:
-	# 				if p2Sum == 0:
-	# 					lineWeight = us_weights[p1Sum]
-	# 			elif p2Sum > 0:
-	# 				lineWeight = p2Sum * them_weights[p2Sum]
-	# 		one_score += lineWeight
-	# 	diffWeight = ((self.flipsRem[0] - self.flipsRem[1]) ** 2) * 1000
-	# 	if self.flipsRem[0] < self.flipsRem[1]: diffWeight = -diffWeight
-	# 	one_score += diffWeight
-	# 	one_score += 150 if self.canFlip else -150
-	# 	return one_score
+	 # 	win = isWin(self.board)
+	 # 	if win[0]:
+	 # 		if win[1]:
+	 # 			if self.player1Turn:
+	 # 				return 1000000 - ((self.flipsRem[1] - self.flipsRem[0]) * 10000)
+	 # 			else:
+	 # 				return -10000000 #has been changed #Changing to -10000000 is better for defence
+	 # 		else:
+	 # 			return 1000000 - ((self.flipsRem[1] - self.flipsRem[0]) * 10000)
+	 # 	elif win[1]:
+	 # 		return -10000000 #has been changed #Changing to -10000000 is better for defence
+	 # 	one_score = 0
+	 # 	b = [[self.board[col][row] for row in range(len(self.board[col]))] + [None] * (6 - len(self.board[col])) for col in range(7)]
+	 # 	isVert = lambda x: x[0][0] == x[1][0] == x[2][0] == x[3][0]
+	 # 	for line in win_lines:
+	 # 		lineVals = [b[cell[0]][cell[1]] for cell in line]
+	 # 		lineWeight = 0
+	 # 		if not isVert(line):
+	 # 			p1Sum = sum(1 for i in range(4) if b[line[i][0]][line[i][1]] is True)
+	 # 			p1Sum -= sum(1 for i in range(4) if b[line[i][0]][line[i][1]] is False)
+	 # 			if p1Sum > 0:
+	 # 				if p1Sum == 3:
+	 # 					lineWeight = 2000
+	 # 				elif p1Sum == 4:
+	 # 					return 1000000 - ((self.flipsRem[1] - self.flipsRem[0]) * 10000)
+	 # 				else:
+	 # 					lineWeight = us_weights[sum(1 for i in range(4) if b[line[i][0]][line[i][1]] is True)]
+	 # 			elif p1Sum < 0:
+	 # 				lineWeight = p1Sum * them_weights[sum(1 for i in range(4) if b[line[i][0]][line[i][1]] is False)]
+	 # 				if p1Sum == -4:
+	 # 					return -10000000 #Added
+	 # 		else:
+	 # 			p1Sum = sum(1 for i in range(4) if b[line[i][0]][line[i][1]] is True)
+	 # 			p2Sum = sum(1 for i in range(4) if b[line[i][0]][line[i][1]] is False)
+	 # 			if p1Sum > 0:
+	 # 				if p2Sum == 0:
+	 # 					lineWeight = us_weights[p1Sum]
+	 # 			elif p2Sum > 0:
+	 # 				lineWeight = p2Sum * them_weights[p2Sum]
+	 # 		one_score += lineWeight
+	 # 	diffWeight = ((self.flipsRem[0] - self.flipsRem[1]) ** 2) * 1000
+	 # 	if self.flipsRem[0] < self.flipsRem[1]: diffWeight = -diffWeight
+	 # 	one_score += diffWeight
+	 # 	one_score += 150 if self.canFlip else -150
+	 # 	return one_score
 
 
 	##This returns all of the states that are legally reachable by the end of the
@@ -201,14 +157,6 @@ class Conniption:
 	# include no flips(noFlip), a flip before placing a chip(preFlip), a flip
 	# after placing a chip(postFlip), and a flip both before and after placing
 	# a chip(dualFlip).
-	#
-	# Parameter:
-	#   player - boolean. Indicates which player will be placing a piece for this
-	#			turn. True indicates that it is player1's turn and False
-	#			indicates that it is player2's turn.
-	#NOTE: This needs to be made as efficient as possible, as this will be one of
-	#	  the major bottlenecks. Can currently generate all 28 possible children
-	#	  of a given board state almost 3500 times per second on my machine
 	def genChildStates(self):
 		if self.children is not None: return
 		nextTurn = not self.player1Turn
@@ -223,10 +171,8 @@ class Conniption:
 				self.children |= {Conniption(flipped[:c]+((flipped[c]+(self.player1Turn,)),)+flipped[c+1:],nextTurn,remFlips,True,self,"f"+str(c+1)) for c in range(7) if len(flipped[c]) < 6}	#PreFlip
 				if fr > 1: #Required for dualFlip
 					remFlips = (self.flipsRem[0]-2, self.flipsRem[1]) if self.player1Turn else (self.flipsRem[0],self.flipsRem[1]-2)
-		261149			self.children |= {Conniption(self.board[:c]+(((self.player1Turn,)+self.board[c]),)+self.board[c+1:],nextTurn,remFlips,False,self,"f"+str(c+1)+"f") for c in range(7) if len(self.board[c]) < 6}	#DualFlip
+					self.children |= {Conniption(self.board[:c]+(((self.player1Turn,)+self.board[c]),)+self.board[c+1:],nextTurn,remFlips,False,self,"f"+str(c+1)+"f") for c in range(7) if len(self.board[c]) < 6}	#DualFlip
 
-	##May be useful later for comparing boards to prevent revisiting equivalent
-	# states.
 	def __eq__(self, connip):
 		if self.board == connip.board											\
 		and self.player1Turn == connip.player1Turn								\
@@ -245,7 +191,6 @@ class Conniption:
 		else:
 			return False
 
-	##This is needed in order to make sets of states.
 	def __hash__(self):
 		return hash(self.board) + hash(self.player1Turn) + hash(self.flipsRem) + hash(self.canFlip)
 
@@ -259,7 +204,7 @@ class Conniption:
 				try:
 					retStr += "|\033[1;37;40mW\33[0m" if self.board[x][y] else "|\033[1;36;40mB\033[0m"
 				except:
-					retStr += "|o"
+					retStr += "|\033[1;30;40mo\033[0m"
 			retStr = retStr + "|\n"
 		retStr += "White flips:  " + str(self.flipsRem[0]) + "\n"
 		retStr += "Blue flips:   " + str(self.flipsRem[1]) + "\n"
@@ -267,23 +212,8 @@ class Conniption:
 		retStr += "Player " + ("1" if self.player1Turn else "2") + " places next"
 		return retStr
 
-	##May want to change this. FYI: this method defines how an object is printed when
-	# you print an object that contains a conniption board. For example, this prevents
-	# print([Conniption()]) from yielding the string "[<Conniption object at x...>]"
-	#
-	# Not a necessary change, but may be helpful for debugging purposes
 	def __repr__(self):
 		return self.__str__()
-
-
-##Generates a random board state for testing purposes. Can be removed from final version
-def genRandomState():
-	board = [[random.random() < 0.5 for _ in range(random.randint(0,5))] for _ in range(7)]
-	flips = (random.randint(0,4), random.randint(0,4))
-	canFlip = random.random() < 0.5
-	player1Turn = random.random() < 0.5
-
-	return Conniption(board, player1Turn, flips, canFlip)
 
 #Checks for a win state
 def isWin(board):
@@ -302,12 +232,7 @@ def isWin(board):
 
 if __name__ == "__main__":
 	t, f  = True, False
-	b = ((f,t),(t,f),(f,t),(t,t,t),(f,t),(t,f), (f,t))
+	b = ((t,f),(t,f),(t,f),tuple(),(t,f),(t,f),(t,f))
 	testBoard = Conniption(b,player1Turn=True)
-	testBoard.betterEval()
+	print(testBoard.betterEval())
 	print(testBoard)
-	"""
-	for _ in tqdm(range(30000)):
-		testBoard.evalBoard()
-	print(testBoard.evalBoard())
-	"""

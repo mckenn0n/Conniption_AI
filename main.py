@@ -11,10 +11,7 @@ def displayCommands():
 	print("  h(elp)\tDisplay this menu")
 	print("  d(isplay)\tDisplay the current board state")
 	print("  u(ndo)\tRevert to the most recent previous state")
-	print("\t\t\tNOTE: this command only allows reverting by up to one ply")
-	print("  s(earch)\tPerform a search and output the suggested next move")
-	print("\t\t\tNOTE: this automatically changes the current state to the")
-	print("\t\t\t      suggested one.")
+	print("\t\t\tNOTE: this command only allows reverting by two ply")
 	print("  (f)[1-7](f)\tChange the state to the one that results from the entered move")
 	
 	print("\n**Players**")
