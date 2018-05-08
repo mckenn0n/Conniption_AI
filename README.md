@@ -2,6 +2,27 @@ URL of the project repository:
     https://github.com/mckenn0n/Conniption_AI
 
 Classes:
+  ## main.py ##
+  
+  This is the UI class that is used for playing against the AI. It uses a REPL like input to control
+  the execution. Before play can begin, three settings must be entered. The first requires that you
+  input whether the AI plays first or second. This is set by entering the number 1 (for first) or 2
+  (for second) after the prompt. Second, you will be asked whether you wish to play against the AI
+  manually or have a random agent play against the AI. After the prompt, input "Yes" if the computer
+  should play randomly or "No" if you wish to play manually. Finally, you will be prompted for the
+  number of times you wish to play against the AI. This can be any integer, but moderate to large values can cause excessive memory usage due to the search keeping track of a visited list, combined with python's unreliable garbage collection. Once these options are set, a list of commands will be displayed and the game will be started. On its turn, the AI will automatically be made to search for its next move. The available commands are described below. Parenthesis indicate optional character sequences and square brackets indicate that any character in the specified range may be used.
+
+  a. q(uit)      - Closes the program early
+  b. h(elp)      - Displays a list of commands
+  c. d(isplay)   - Displays information about the current game state (this same state information
+                   will be displayed at the beginning of every turn automatically)
+  d. u(ndo)      - Returns the state to the user's most recent previous turn. This can only be used
+                   to revert one turn at a given time because nodes further up the tree are deleted
+                   periodically to reduce memory usage.
+  e. (f)[1-7](f) - plays the move described by this string. This command can only be used when it is
+                   the user's turn. The number is the only required character and indicates which
+                   column a piece is to be placed in. The "f" characters, if included, indicate that
+                   the board is to be flipped before/after the piece is placed.
 
   ## Conniption.py ##
   
