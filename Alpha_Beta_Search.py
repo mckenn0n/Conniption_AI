@@ -37,7 +37,6 @@ class AlphaBeta:
 			if value > 1000000 and i == 1:
 				return best_state,value
 			best_states.append([best_state, value])
-		# print(*best_states, sep="\n")			#For testing purposes
 		return max(best_states, key=lambda x: x[1])
 
 	##Parameters:
@@ -51,7 +50,6 @@ class AlphaBeta:
 	def max_value(self, state, depth, max_depth, alpha, beta):
 		if depth >= max_depth:
 			if self.saveVisited:
-				global visited
 				if state in visited:
 					return visited.get(state)
 				else:
@@ -70,7 +68,6 @@ class AlphaBeta:
 			if value >= beta:
 				return value
 			alpha = max(alpha, value)
-			#print("alpha: "+str(alpha)) 	#For Testing purposes
 		return value
 
 	##Parameters:
@@ -84,7 +81,6 @@ class AlphaBeta:
 	def min_value(self, state, depth, max_depth, alpha, beta):
 		if depth >= max_depth:
 			if self.saveVisited:
-				global visited
 				if state in visited:
 					return visited.get(state)
 				else:
@@ -103,7 +99,6 @@ class AlphaBeta:
 			if value <= alpha:
 				return value
 			beta = min(beta, value)
-			#print("beta: "+str(beta)) 	#For testing purposes
 		return value
 
 ##Generate a random board for testing purposes
