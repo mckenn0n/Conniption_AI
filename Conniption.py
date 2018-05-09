@@ -158,6 +158,7 @@ class Conniption:
 	# after placing a chip(postFlip), and a flip both before and after placing
 	# a chip(dualFlip).
 	def genChildStates(self):
+		
 		if self.children is not None: return
 		order = [3,2,4,1,5,0,6]
 		nextTurn = not self.player1Turn
@@ -173,6 +174,33 @@ class Conniption:
 				if fr > 1: #Required for dualFlip
 					remFlips = (self.flipsRem[0]-2, self.flipsRem[1]) if self.player1Turn else (self.flipsRem[0],self.flipsRem[1]-2)
 					self.children |= {Conniption(self.board[:c]+(((self.player1Turn,)+self.board[c]),)+self.board[c+1:],nextTurn,remFlips,False,self,"f"+str(c+1)+"f") for c in order if len(self.board[c]) < 6}	#DualFlip
+		""" MORE READABLE VERSION OF THE ABOVE. WILL LIKELY BE NOTABLY SLOWER
+		if self.children is not None: return
+		order = [3,2,4,1,5,0,6]
+		nextTurn = not self.player1Turn
+		self.children = set()
+		flipped = tuple(tuple(reversed(c)) for c in self.board)
+		fr = self.flipsRem[0 if self.player1Turn else 1]	#number of flips the current player has available still
+		singRemFlips = (self.flipsRem[0]-1, self.flipsRem[1]) if self.player1Turn else (self.flipsRem[0],self.flipsRem[1]-1) #subtracts 1 from current player's remaiing flips
+		dualRemFlips = (self.flipsRem[0]-2, self.flipsRem[1]) if self.player1Turn else (self.flipsRem[0],self.flipsRem[1]-2) #subtracts 2 from current player's remaiing flips
+		for col in order:
+			if len(self.board[col]) < 6: #required for adding to the current column
+				#Weird parenthesis structure is necessary to ensure that tuples of tuples are concatenated and not inserted into previous
+				#I.E.
+				#	current result: ((),(),(),(),(),(),())
+				#	result with fewer paren: ((),(),((),(),(),())) or some variation of this
+				noFlip = self.board[:col]+((self.board[col]+(self.player1Turn,)),)+self.board[col+1:] #places piece at end of current column's tuple
+				self.children.add(Conniption(noFlip, nextTurn, self.flipsRem, True, self, str(col+1)))
+				if fr > 0:	#required for flips to be possible
+					postFlip = flipped[:col]+(((self.player1Turn,)+flipped[col]),)+flipped[col+1:] #places piece at beginning of flipped version of current column's tuple
+					self.children.add(Conniption(postFlip, nextTurn, singRemFlips, False, self, str(col+1)+"f"))
+					if self.canFlip:  #required for flips at beginning of ply (pre and dual flips)
+						preFlip = flipped[:col]+((flipped[col]+(self.player1Turn,)),)+flipped[col+1:] #places piece at end of flipped version of current column's tuple
+						self.children.add(Conniption(preFlip, nextTurn, singRemFlips, True, self, "f"+str(col+1)))
+						if fr > 1:  #required for dualflips
+							dualFlip = self.board[:col]+(((self.player1Turn,)+self.board[col]),)+self.board[col+1:] #places piece at beginning of current column's tuple
+							self.children.add(Conniption(dualFlip, nextTurn, dualRemFlips, False, self, "f"+str(col+1)+"f"))
+		"""
 
 	def __eq__(self, connip):
 		if self.board == connip.board											\
@@ -233,7 +261,7 @@ def isWin(board):
 
 if __name__ == "__main__":
 	t, f  = True, False
-	b = ((t,f),(t,f),(t,f),tuple(),(t,f),(t,f),(t,f))
+	b = ((t,f),(f,t),(t,f),(f,t),(t,f),(f,t),(t,f))
 	testBoard = Conniption(b,player1Turn=True)
-	print(testBoard.betterEval())
-	print(testBoard)
+	testBoard.genChildStates()
+	print(testBoard.children)
