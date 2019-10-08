@@ -1,7 +1,3 @@
-URL of the project repository:
-
-    https://github.com/mckenn0n/Conniption_AI
-
 Classes:
   ## main.py ##
   
